@@ -16,7 +16,9 @@ import {
   type Server,
 } from '../utils/index.js';
 
+import { FileRouter } from '../routes/index.js';
 import * as Middlewares from './middleware.js';
+import Encryption from './services/encryption.js';
 
 /**********************************************************************************/
 
@@ -43,6 +45,7 @@ export default class HttpServer {
     allowedMethods: Set<string>;
     allowedHosts: Set<string>;
     routes: { http: string; health: string };
+    encryptionParams: { key: string; iv: string };
     logger: ReturnType<Logger['getHandler']>;
     logMiddleware: (
       req: Request,
@@ -55,9 +58,15 @@ export default class HttpServer {
       allowedMethods,
       allowedHosts,
       routes,
+      encryptionParams,
       logger,
       logMiddleware,
     } = params;
+
+    const encryption = new Encryption(
+      encryptionParams.key,
+      encryptionParams.iv
+    );
 
     // Disable 'x-powered-by' should be pretty clear. The Reason for disabling etag
     // can be understood by this comprehensive answer: https://stackoverflow.com/a/67929691
@@ -68,6 +77,7 @@ export default class HttpServer {
       mode: mode,
       server: server,
       routes: routes,
+      encryption: encryption,
       logger: logger,
     });
 
@@ -123,9 +133,10 @@ export default class HttpServer {
     mode: Mode;
     server: Server;
     routes: { http: string; health: string };
+    encryption: Encryption;
     logger: ReturnType<Logger['getHandler']>;
   }) {
-    const { mode, server, routes, logger } = params;
+    const { mode, server, routes, encryption, logger } = params;
 
     this.#mode = mode;
     this.#server = server;
@@ -133,6 +144,7 @@ export default class HttpServer {
     this.#logger = logger;
 
     this.#requestContext = {
+      encryption: encryption,
       logger: logger,
     };
 
@@ -269,8 +281,7 @@ export default class HttpServer {
       // check route
       .use(logMiddleware)
       .use(httpRoute, Middlewares.attachContext(this.#requestContext))
-      // Add the routers here
-
+      .use(`${httpRoute}/files`, FileRouter)
       // Non-existent route & error handler
       .use('*', Middlewares.handleMissedRoutes, Middlewares.errorHandler);
   }

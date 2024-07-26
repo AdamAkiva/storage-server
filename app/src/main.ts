@@ -40,8 +40,11 @@ await startServer();
 async function startServer() {
   generalDebug('Application starting...');
 
-  const { mode, server: serverEnv } =
-    new EnvironmentVariables().getEnvVariables();
+  const {
+    mode,
+    server: serverEnv,
+    encryption,
+  } = new EnvironmentVariables().getEnvVariables();
 
   const { logger, logMiddleware } = createLogger();
 
@@ -61,6 +64,7 @@ async function startServer() {
       http: `/${serverEnv.httpRoute}`,
       health: `/${serverEnv.healthCheck.route}`,
     },
+    encryptionParams: encryption,
     logger: logger,
     logMiddleware: logMiddleware,
   });
