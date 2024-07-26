@@ -1,0 +1,80 @@
+services:
+  ilrd-storage-pg-dev:
+    hostname: ilrd-storage-pg-dev
+    container_name: ilrd-storage-pg-dev
+    restart: unless-stopped
+    image: postgres:14-alpine
+    user: ${UID}:${GID}
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=ilrd-storage-dev
+    volumes:
+      - ./dev-data/pg:/var/lib/postgresql/data:rw
+      # See: https://github.com/docker-library/docs/blob/master/postgres/README.md#arbitrary---user-notes
+      - /etc/passwd:/etc/passwd:ro
+      # See: https://stackoverflow.com/a/44440563
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    healthcheck:
+      test: pg_isready -p 5432 -U admin -d ilrd-storage-dev
+      interval: 3s
+      timeout: 2s
+      retries: 5
+    command: postgres -p 5432 -c log_statement=all
+
+  ilrd-storage-dev:
+    hostname: ilrd-storage-dev
+    container_name: ilrd-storage-dev
+    restart: unless-stopped
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      target: app-dev
+      args:
+        DOCKER_BUILDKIT: 1
+    user: ${UID}:${GID}
+    environment:
+      - SERVER_PORT=9554
+      - SERVER_DEBUG_PORT=9229
+      - SERVER_BASE_URL=http://localhost
+      - HTTP_ROUTE=v0/api
+      - HEALTH_CHECK_ROUTE=health
+      - ALLOWED_HOSTS=127.0.0.1,::,localhost
+      - DB_URL=postgres://admin:admin@ilrd-storage-pg-dev:5432/ilrd-storage-dev
+
+      - NODE_ENV=development
+      - NODE_NO_WARNINGS=0
+      - UV_THREADPOOL_SIZE=${UV_THREADPOOL_SIZE}
+    volumes:
+      - ./app:/home/node/ilrd-storage:rw
+      # Volume npm cache to speed up the npm install. This should allow cache reuse
+      # whenever node_modules are removed.
+      # See: https://docs.npmjs.com/cli/v6/using-npm/config#cache for reference
+      - ./npm-cache:/home/node/.npm:rw
+      # See: https://stackoverflow.com/a/44440563
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    # tty enables better log format for npm and debug. Using it in development
+    # is not an issue, however, don't enable it production since there's no need
+    tty: true
+    stdin_open: true
+    ports:
+      - "9554:9554"
+      - "9229:9229"
+    healthcheck:
+      # Change the grep -q command to the http status code returned from the
+      # health check route
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s -o /dev/null -w '%{http_code}' http://localhost:9554/health | grep -q '204'"
+        ]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 30s
+    # Uncomment for the database(s) you've chosen
+    depends_on:
+      ilrd-storage-pg-dev:
+        condition: service_healthy

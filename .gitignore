@@ -7,9 +7,10 @@
 # Block previously allowed folders
 **/build/
 **/coverage/
-**/db-dev-data/
+**/dev-data/
 **/node_modules/
 **/npm-cache/
+**/dist/
 
 # Exclude source files
 !*.ts
