@@ -2,7 +2,7 @@ import * as Middlewares from './middleware.js';
 import Encryption from './services/encryption.js';
 
 import { Database } from '../db/index.js';
-import { FileRouter } from '../routes/index.js';
+import { FileRouter } from '../entities/index.js';
 import {
   ERR_CODES,
   createServer,
@@ -47,6 +47,7 @@ export default class HttpServer {
 
   public static async create(params: {
     mode: Mode;
+    localFilesPath: string;
     dbParams: {
       url: string;
       options?: pg.Options<{}>;
@@ -66,6 +67,7 @@ export default class HttpServer {
   }) {
     const {
       mode,
+      localFilesPath,
       dbParams,
       encryptionParams,
       allowedMethods,
@@ -89,6 +91,7 @@ export default class HttpServer {
 
     const self = new HttpServer({
       mode: mode,
+      localFilesPath: localFilesPath,
       db: db,
       encryption: encryption,
       server: server,
@@ -154,13 +157,15 @@ export default class HttpServer {
   // async creation
   private constructor(params: {
     mode: Mode;
+    localFilesPath: string;
     db: Database;
     encryption: Encryption;
     server: Server;
     routes: { http: string; health: string };
     logger: ReturnType<Logger['getHandler']>;
   }) {
-    const { mode, db, encryption, server, routes, logger } = params;
+    const { mode, localFilesPath, db, encryption, server, routes, logger } =
+      params;
 
     this.#mode = mode;
     this.#db = db;
@@ -170,6 +175,7 @@ export default class HttpServer {
     this.#logger = logger;
 
     this.#requestContext = {
+      localFilesPath: localFilesPath,
       db: db,
       encryption: encryption,
       logger: logger,

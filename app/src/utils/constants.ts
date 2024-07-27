@@ -11,6 +11,7 @@ export const fileDebug = Debug('ilrd-storage:file');
 export const VALIDATION = {
   BUFFER_SIZE: 1_024 * 1_024 * 2, // 2MB in bytes
   MAX_FILE_SIZE: 1_024 * 1_024 * 20, // 2GB in bytes
+  ALLOWED_STORAGE_MEDIUMS: ['local', 's3'],
 } as const;
 
 /**********************************************************************************/
@@ -37,6 +38,12 @@ export enum StatusCodes {
 }
 
 export const ERR_CODES = {
+  // See: https://www.postgresql.org/docs/current/errcodes-appendix.html
+  PG: {
+    FOREIGN_KEY_VIOLATION: '23503',
+    UNIQUE_VIOLATION: '23505',
+    TOO_MANY_CONNECTIONS: '53300',
+  },
   // Indicator to the deployment orchestration service to not attempt to restart
   // the service, since the error is a result of a programmer error, and therefore
   // the application should not restart by default

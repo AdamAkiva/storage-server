@@ -64,6 +64,7 @@ services:
       - ALLOWED_HOSTS=127.0.0.1,::,localhost
       - DB_URL=postgres://admin:admin@ilrd-storage-pg-dev:5432/ilrd-storage-dev
       - DB_TEST_URL=postgres://admin:admin@ilrd-storage-pg-test:5432/ilrd-storage-test
+      - FILES_PATH=/home/node/files
 
       # Should be random and secure values (as much as possible)
       # In development/test environment we don't care
@@ -75,6 +76,7 @@ services:
       - UV_THREADPOOL_SIZE=${UV_THREADPOOL_SIZE}
     volumes:
       - ./app:/home/node/ilrd-storage:rw
+      - ./dev-data/files:/home/node/files
       # Volume npm cache to speed up the npm install. This should allow cache reuse
       # whenever node_modules are removed.
       # See: https://docs.npmjs.com/cli/v6/using-npm/config#cache for reference

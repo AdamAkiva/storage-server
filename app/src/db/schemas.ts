@@ -13,6 +13,7 @@ export const fileModel = pgTable('files', {
   name: varchar('name').notNull(),
   encoding: varchar('encoding').notNull(),
   mimeType: varchar('mime_type').notNull(),
+  path: varchar('path').notNull(),
   secured: boolean('secured').notNull(),
   createdAt: timestamp('created_at', {
     mode: 'string',

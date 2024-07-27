@@ -5,8 +5,8 @@ GID=$(id -g);
 
 SCRIPT_DIR=$(dirname "$(realpath "$0")");
 ROOT_DIR=$(dirname "$SCRIPT_DIR");
-# Change the path according to your database(s) choice(s)
 DB_DATA_FOLDER="$ROOT_DIR"/dev-data/pg;
+FILES_FOLDER="$ROOT_DIR/dev-data/files"
 
 NPM_CACHE_FOLDER="$ROOT_DIR"/npm-cache;
 
@@ -36,7 +36,7 @@ start() {
 
     # When a folder exists and is only populated the permissions of the populated
     # file(s) take on the permission of the root folder, hence the current user
-    mkdir -p "$DB_DATA_FOLDER" "$NPM_CACHE_FOLDER";
+    mkdir -p "$DB_DATA_FOLDER" "$FILES_FOLDER" "$NPM_CACHE_FOLDER";
 
     printf "Building Ilrd Storage...\n\n";
 
