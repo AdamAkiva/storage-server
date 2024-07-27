@@ -23,6 +23,27 @@ services:
       retries: 5
     command: postgres -p 5432 -c log_statement=all
 
+  ilrd-storage-pg-test:
+    hostname: ilrd-storage-pg-test
+    container_name: ilrd-storage-pg-test
+    restart: unless-stopped
+    image: postgres:14-alpine
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=ilrd-storage-test
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    healthcheck:
+      test: pg_isready -p 5432 -U admin -d ilrd-storage-test
+      interval: 3s
+      timeout: 2s
+      retries: 5
+    command: postgres -p 5432
+
+##################################################################################
+
   ilrd-storage-dev:
     hostname: ilrd-storage-dev
     container_name: ilrd-storage-dev
@@ -42,6 +63,12 @@ services:
       - HEALTH_CHECK_ROUTE=health
       - ALLOWED_HOSTS=127.0.0.1,::,localhost
       - DB_URL=postgres://admin:admin@ilrd-storage-pg-dev:5432/ilrd-storage-dev
+      - DB_TEST_URL=postgres://admin:admin@ilrd-storage-pg-test:5432/ilrd-storage-test
+
+      # Should be random and secure values (as much as possible)
+      # In development/test environment we don't care
+      - ENCRYPTION_KEY_SEED=htJ112BBBGiPwZdJzW7Y7WxDhbG5zWtUFB2OYqNfJrc=
+      - ENCRYPTION_IV_SEED=E0HMvskIqSzfz+ua3JfNDfJqf19JQ9Dyz/QeVkd7a5c=
 
       - NODE_ENV=development
       - NODE_NO_WARNINGS=0

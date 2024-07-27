@@ -8,7 +8,7 @@ import type { Mode } from './types/index.js';
 
 /**********************************************************************************/
 
-type EnvVars = {
+type EnvironmentVariables = {
   mode: Mode;
   server: {
     port: string;
@@ -16,12 +16,17 @@ type EnvVars = {
     httpRoute: string;
     healthCheck: { route: string; allowedHosts: Set<string> };
   };
+  db: string;
+  encryption: {
+    key: string;
+    iv: string;
+  };
 };
 
 /**********************************************************************************/
 
-export default class EnvironmentVariables {
-  readonly #environmentVariables: EnvVars;
+export default class EnvironmentManager {
+  readonly #environmentVariables;
 
   public constructor() {
     const mode = this.#checkRuntimeEnv(process.env.NODE_ENV);
@@ -38,7 +43,12 @@ export default class EnvironmentVariables {
           allowedHosts: new Set(process.env.ALLOWED_HOSTS!.split(',')),
         },
       },
-    } as const;
+      db: process.env.DB_URL!,
+      encryption: {
+        key: process.env.ENCRYPTION_KEY_SEED!,
+        iv: process.env.ENCRYPTION_IV_SEED!,
+      },
+    } as const satisfies EnvironmentVariables;
   }
 
   public getEnvVariables() {
@@ -81,6 +91,9 @@ export default class EnvironmentVariables {
       'HTTP_ROUTE',
       'HEALTH_CHECK_ROUTE',
       'ALLOWED_HOSTS',
+      'DB_URL',
+      'ENCRYPTION_KEY_SEED',
+      'ENCRYPTION_IV_SEED',
     ];
     if (mode === 'development') {
       environmentVariables.push('SERVER_DEBUG_PORT');

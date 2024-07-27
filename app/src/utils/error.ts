@@ -1,4 +1,4 @@
-export default class NodeTemplateError extends Error {
+export default class ILRDStorageError extends Error {
   readonly #msg;
   readonly #code;
 

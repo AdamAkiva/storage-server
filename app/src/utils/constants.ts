@@ -2,12 +2,14 @@ import Debug from 'debug';
 
 /**********************************************************************************/
 
-export const generalDebug = Debug('node-template:general');
+export const generalDebug = Debug('ilrd-storage:general');
+export const fileDebug = Debug('ilrd-storage:file');
 
 /**********************************************************************************/
 
 export const VALIDATION = {
-  // Populate this with validation limits, such as length/regex limits
+  BUFFER_SIZE: 1_024 * 1_024 * 2, // 2MB in bytes
+  MAX_FILE_SIZE: 1_024 * 1_024 * 20, // 2GB in bytes
 } as const;
 
 /**********************************************************************************/
@@ -30,7 +32,7 @@ export enum StatusCodes {
   CONTENT_TOO_LARGE = 413,
   TOO_MANY_REQUESTS = 429,
   SERVER_ERROR = 500,
-  GATEWAY_TIMEOUT = 504
+  GATEWAY_TIMEOUT = 504,
 }
 
 export const ERR_CODES = {
@@ -38,5 +40,5 @@ export const ERR_CODES = {
   // the service, since the error is a result of a programmer error, and therefore
   // the application should not restart by default
   EXIT_RESTART: 1,
-  EXIT_NO_RESTART: 180
+  EXIT_NO_RESTART: 180,
 } as const;
