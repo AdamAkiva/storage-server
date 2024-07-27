@@ -14,6 +14,7 @@ import type {
 
 import type Logger from '../logger.js';
 
+import type { Database } from '../../db/index.js';
 import type { Encryption } from '../../server/index.js';
 
 /******************************** General *****************************************/
@@ -43,6 +44,7 @@ export type ResponseWithoutCtx = ExpressResponse<unknown, {}>;
 export type ResponseWithCtx = ExpressResponse<unknown, { ctx: RequestContext }>;
 
 export type RequestContext = {
+  db: Database;
   encryption: Encryption;
   logger: ReturnType<Logger['getHandler']>;
 };

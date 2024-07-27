@@ -20,6 +20,7 @@
 # Etc
 !*.json
 !*.sh
+!*.sql
 !*.md
 !*.yml
 !Dockerfile

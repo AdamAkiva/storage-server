@@ -28,6 +28,7 @@ import {
   ERR_CODES,
   EnvironmentVariables,
   Logger,
+  databaseDebug,
   generalDebug,
 } from './utils/index.js';
 
@@ -42,6 +43,7 @@ async function startServer() {
 
   const {
     mode,
+    db: dbUrl,
     server: serverEnv,
     encryption,
   } = new EnvironmentVariables().getEnvVariables();
@@ -50,6 +52,12 @@ async function startServer() {
 
   const server = await HttpServer.create({
     mode: mode,
+    dbParams: {
+      url: dbUrl,
+      healthCheckQuery: 'SELECT NOW()',
+      debugInstance: databaseDebug,
+    },
+    encryptionParams: encryption,
     allowedMethods: new Set([
       'HEAD',
       'GET',
@@ -64,7 +72,6 @@ async function startServer() {
       http: `/${serverEnv.httpRoute}`,
       health: `/${serverEnv.healthCheck.route}`,
     },
-    encryptionParams: encryption,
     logger: logger,
     logMiddleware: logMiddleware,
   });

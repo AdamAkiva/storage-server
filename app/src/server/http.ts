@@ -1,3 +1,8 @@
+import * as Middlewares from './middleware.js';
+import Encryption from './services/encryption.js';
+
+import { Database } from '../db/index.js';
+import { FileRouter } from '../routes/index.js';
 import {
   ERR_CODES,
   createServer,
@@ -7,6 +12,7 @@ import {
   isTestMode,
   resolve,
   type AddressInfo,
+  type DebugInstance,
   type Express,
   type Logger,
   type Mode,
@@ -14,11 +20,8 @@ import {
   type Request,
   type ResponseWithoutCtx,
   type Server,
+  type pg,
 } from '../utils/index.js';
-
-import { FileRouter } from '../routes/index.js';
-import * as Middlewares from './middleware.js';
-import Encryption from './services/encryption.js';
 
 /**********************************************************************************/
 
@@ -31,6 +34,8 @@ export default class HttpServer {
 
   readonly #mode;
 
+  readonly #db;
+  readonly #encryption;
   readonly #server;
   readonly #routes;
 
@@ -42,10 +47,16 @@ export default class HttpServer {
 
   public static async create(params: {
     mode: Mode;
+    dbParams: {
+      url: string;
+      options?: pg.Options<{}>;
+      healthCheckQuery: string;
+      debugInstance: DebugInstance;
+    };
+    encryptionParams: { key: string; iv: string };
     allowedMethods: Set<string>;
     allowedHosts: Set<string>;
     routes: { http: string; health: string };
-    encryptionParams: { key: string; iv: string };
     logger: ReturnType<Logger['getHandler']>;
     logMiddleware: (
       req: Request,
@@ -55,13 +66,16 @@ export default class HttpServer {
   }) {
     const {
       mode,
+      dbParams,
+      encryptionParams,
       allowedMethods,
       allowedHosts,
       routes,
-      encryptionParams,
       logger,
       logMiddleware,
     } = params;
+
+    const db = new Database(dbParams);
 
     const encryption = new Encryption(
       encryptionParams.key,
@@ -75,9 +89,10 @@ export default class HttpServer {
 
     const self = new HttpServer({
       mode: mode,
+      db: db,
+      encryption: encryption,
       server: server,
       routes: routes,
-      encryption: encryption,
       logger: logger,
     });
 
@@ -125,25 +140,37 @@ export default class HttpServer {
     this.#server.close();
   }
 
+  public getDatabase() {
+    return this.#db;
+  }
+
+  public getEncryption() {
+    return this.#encryption;
+  }
+
   /********************************************************************************/
 
   // Prevent creating the class via the constructor because it needs to be an
   // async creation
   private constructor(params: {
     mode: Mode;
+    db: Database;
+    encryption: Encryption;
     server: Server;
     routes: { http: string; health: string };
-    encryption: Encryption;
     logger: ReturnType<Logger['getHandler']>;
   }) {
-    const { mode, server, routes, encryption, logger } = params;
+    const { mode, db, encryption, server, routes, logger } = params;
 
     this.#mode = mode;
+    this.#db = db;
+    this.#encryption = encryption;
     this.#server = server;
     this.#routes = routes;
     this.#logger = logger;
 
     this.#requestContext = {
+      db: db,
       encryption: encryption,
       logger: logger,
     };
@@ -199,10 +226,7 @@ export default class HttpServer {
 
   async #handleCloseEvent() {
     let exitCode = 0;
-    const results = await Promise.allSettled([
-      // Close all services here (database for example)
-      Promise.resolve(0),
-    ]);
+    const results = await Promise.allSettled([this.#db.close()]);
     for (const result of results) {
       if (result.status === 'rejected') {
         this.#logger.fatal(result.reason, 'Error during server termination');
@@ -293,15 +317,14 @@ export default class HttpServer {
   }
 
   async #healthCheck() {
-    // Add the health check here, for example:
-    // let notReadyMsg = '';
-    // try {
-    //   await this.#db.isReady();
-    // } catch (err) {
-    //   this.#logger.error(err, 'Database error');
-    //   notReadyMsg += '\nDatabase is unavailable';
-    // }
+    let notReadyMsg = '';
+    try {
+      await this.#db.isReady();
+    } catch (err) {
+      this.#logger.error(err, 'Database error');
+      notReadyMsg += '\nDatabase is unavailable';
+    }
 
-    return await Promise.resolve('');
+    return notReadyMsg;
   }
 }

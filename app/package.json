@@ -7,6 +7,8 @@
   "scripts": {
     "test": "printf 'Application has no tests\n' && exit 1",
     "lint": "tsc --project ./tsconfig.lint.json --noEmit && eslint 'src/**/*.ts'",
+    "generate-migrations": "drizzle-kit generate --name=init-db --config=./db-migrations/drizzle.config.ts",
+    "commit-migrations": "drizzle-kit migrate --config=./db-migrations/drizzle.config.ts",
     "generate-types": "swagger-typescript-api --modular --no-client -o ./src/utils/types -p ./src/api-docs/openapi.yml && mv ./src/utils/types/data-contracts.ts ./src/utils/types/api.ts",
     "generate-openapi": "redocly build-docs ./src/api-docs/openapi.yml -o ./src/api-docs/openapi.html",
     "check-global-updates": "ncu -g",
@@ -20,9 +22,11 @@
   "dependencies": {
     "busboy": "~1.6.0",
     "debug": "~4.3.5",
+    "drizzle-orm": "~0.32.1",
     "express": "~4.19.2",
     "helmet": "~7.1.0",
     "pino-http": "~10.2.0",
+    "postgres": "~3.4.4",
     "support-color": "~7.1.0"
   },
   "devDependencies": {
@@ -35,6 +39,7 @@
     "@types/node": "~20.14.12",
     "depcheck": "~1.4.7",
     "dpdm": "~3.14.0",
+    "drizzle-kit": "~0.23.0",
     "eslint": "~8.57.0",
     "eslint-config-prettier": "~9.1.0",
     "eslint-plugin-security": "~3.0.1",

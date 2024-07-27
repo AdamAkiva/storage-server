@@ -104,7 +104,15 @@ function readFileEventHandler(params: {
   resolve: Resolve;
   reject: Reject;
 }): BusboyEvents['file'] {
-  const { ctx, resolve, reject } = params;
+  const {
+    ctx: { db },
+    resolve,
+    reject,
+  } = params;
+  const handler = db.getHandler();
+  const {
+    file: { model: fileModel },
+  } = db.getModels();
 
   return async (_, file, info) => {
     try {
@@ -127,7 +135,22 @@ function readFileEventHandler(params: {
         },
       });
 
-      await pipeline(file, trackingStream, createWriteStream(filename));
+      const results = await Promise.allSettled([
+        pipeline(file, trackingStream, createWriteStream(filename)),
+        handler.insert(fileModel).values({
+          name: filename,
+          encoding: encoding,
+          mimeType: mimeType,
+          secured: false,
+        }),
+      ]);
+      results.forEach((result) => {
+        {
+          if (result.status === 'rejected') {
+            throw result.reason;
+          }
+        }
+      });
 
       file
         .on('end', () => {
@@ -157,10 +180,14 @@ function readSecureFileEventHandler(params: {
   reject: Reject;
 }): BusboyEvents['file'] {
   const {
-    ctx: { encryption },
+    ctx: { encryption, db },
     resolve,
     reject,
   } = params;
+  const handler = db.getHandler();
+  const {
+    file: { model: fileModel },
+  } = db.getModels();
 
   return async (_, file, info) => {
     try {
@@ -188,7 +215,22 @@ function readSecureFileEventHandler(params: {
         },
       });
 
-      await pipeline(file, trackingStream, createWriteStream(filename));
+      const results = await Promise.allSettled([
+        pipeline(file, trackingStream, createWriteStream(filename)),
+        handler.insert(fileModel).values({
+          name: filename,
+          encoding: encoding,
+          mimeType: mimeType,
+          secured: true,
+        }),
+      ]);
+      results.forEach((result) => {
+        {
+          if (result.status === 'rejected') {
+            throw result.reason;
+          }
+        }
+      });
 
       file
         .on('end', () => {
