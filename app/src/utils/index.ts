@@ -11,14 +11,22 @@ import { Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 
 import BusBoy from 'busboy';
+import {
+  type Logger as DrizzleLogger,
+  getTableColumns,
+  sql,
+} from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/postgres-js';
 import express, { Router, json } from 'express';
 import helmet from 'helmet';
+import pg from 'postgres';
 
 import EnvironmentVariables from './config.js';
 import {
   ERR_CODES,
   StatusCodes,
   VALIDATION,
+  databaseDebug,
   fileDebug,
   generalDebug,
 } from './constants.js';
@@ -75,20 +83,25 @@ export {
   createHash,
   createServer,
   createWriteStream,
+  databaseDebug,
   debugWrapper,
+  drizzle,
   express,
   fileDebug,
   filterNullAndUndefined,
   generalDebug,
+  getTableColumns,
   helmet,
   isDevelopmentMode,
   isProductionMode,
   isTestMode,
   json,
   objHasValues,
+  pg,
   pipeline,
   randomUUID,
   resolve,
+  sql,
   strcasecmp,
   type AddOptional,
   type AddRequired,
@@ -96,6 +109,7 @@ export {
   type ArrayWithAtLeastOneValue,
   type BusboyEvents,
   type DebugInstance,
+  type DrizzleLogger,
   type Express,
   type MaybeArray,
   type Mode,

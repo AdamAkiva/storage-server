@@ -3,6 +3,7 @@ import Debug from 'debug';
 /**********************************************************************************/
 
 export const generalDebug = Debug('ilrd-storage:general');
+export const databaseDebug = Debug('ilrd-storage:database');
 export const fileDebug = Debug('ilrd-storage:file');
 
 /**********************************************************************************/
