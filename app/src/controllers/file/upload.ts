@@ -1,11 +1,15 @@
 import {
+  asyncDebugWrapper,
   BusBoy,
   createWriteStream,
+  fileDebug,
+  ILRDStorageError,
   pipeline,
   StatusCodes,
   Transform,
   VALIDATION,
   type BusboyEvents,
+  type NextFunction,
   type Reject,
   type Request,
   type RequestContext,
@@ -23,33 +27,49 @@ type EventHandler = (params: {
 
 /**********************************************************************************/
 
-export async function uploadFile(req: Request, res: ResponseWithCtx) {
+export async function uploadFile(
+  req: Request,
+  res: ResponseWithCtx,
+  next: NextFunction
+) {
   try {
-    await upload({
-      req: req,
-      ctx: res.locals.ctx,
-      eventHandler: readFileEventHandler,
-    });
+    await asyncDebugWrapper(
+      async () => {
+        await upload({
+          req: req,
+          ctx: res.locals.ctx,
+          eventHandler: readFileEventHandler,
+        });
+      },
+      { instance: fileDebug, msg: 'Uploading file' }
+    );
 
     res.status(StatusCodes.SUCCESS).json('OK');
   } catch (err) {
-    console.error(err);
-    res.status(StatusCodes.BAD_REQUEST).json('Error uploading file');
+    return next(err);
   }
 }
 
-export async function uploadSecureFile(req: Request, res: ResponseWithCtx) {
+export async function uploadSecureFile(
+  req: Request,
+  res: ResponseWithCtx,
+  next: NextFunction
+) {
   try {
-    await upload({
-      req: req,
-      ctx: res.locals.ctx,
-      eventHandler: readSecureFileEventHandler,
-    });
+    await asyncDebugWrapper(
+      async () => {
+        await upload({
+          req: req,
+          ctx: res.locals.ctx,
+          eventHandler: readSecureFileEventHandler,
+        });
+      },
+      { instance: fileDebug, msg: 'Uploading encrypted file' }
+    );
 
     res.status(StatusCodes.SUCCESS).json('OK');
   } catch (err) {
-    console.error(err);
-    res.status(StatusCodes.BAD_REQUEST).json('Error uploading file');
+    return next(err);
   }
 }
 
@@ -95,7 +115,12 @@ function readFileEventHandler(params: {
         transform: (chunk, _, cb) => {
           fileSize += chunk.length;
           if (fileSize > VALIDATION.MAX_FILE_SIZE) {
-            return cb(new Error(`File '${filename}' size is too large`));
+            return cb(
+              new ILRDStorageError(
+                `File '${filename}' size is too large`,
+                StatusCodes.BAD_REQUEST
+              )
+            );
           }
 
           return cb(null, chunk);
@@ -107,7 +132,12 @@ function readFileEventHandler(params: {
       file
         .on('end', () => {
           if (fileSize >= VALIDATION.MAX_FILE_SIZE) {
-            return reject(new Error(`File '${filename}' size is too large`));
+            return reject(
+              new ILRDStorageError(
+                `File '${filename}' size is too large`,
+                StatusCodes.BAD_REQUEST
+              )
+            );
           }
         })
         .on('error', (err) => {
@@ -143,7 +173,12 @@ function readSecureFileEventHandler(params: {
         transform: (chunk, _, cb) => {
           fileSize += chunk.length;
           if (fileSize > VALIDATION.MAX_FILE_SIZE) {
-            return cb(new Error(`File '${filename}' size is too large`));
+            return cb(
+              new ILRDStorageError(
+                `File '${filename}' size is too large`,
+                StatusCodes.BAD_REQUEST
+              )
+            );
           }
 
           return cb(null, cipher.update(chunk));
@@ -158,7 +193,12 @@ function readSecureFileEventHandler(params: {
       file
         .on('end', () => {
           if (fileSize >= VALIDATION.MAX_FILE_SIZE) {
-            return reject(new Error(`File '${filename}' size is too large`));
+            return reject(
+              new ILRDStorageError(
+                `File '${filename}' size is too large`,
+                StatusCodes.BAD_REQUEST
+              )
+            );
           }
         })
         .on('error', (err) => {

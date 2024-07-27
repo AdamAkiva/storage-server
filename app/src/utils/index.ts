@@ -22,7 +22,7 @@ import {
   fileDebug,
   generalDebug,
 } from './constants.js';
-import NodeTemplateError from './error.js';
+import ILRDStorageError from './error.js';
 import {
   asyncDebugWrapper,
   debugWrapper,
@@ -63,8 +63,8 @@ export {
   BusBoy,
   ERR_CODES,
   EnvironmentVariables,
+  ILRDStorageError,
   Logger,
-  NodeTemplateError,
   Router,
   StatusCodes,
   Transform,
