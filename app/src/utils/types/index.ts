@@ -44,6 +44,7 @@ export type ResponseWithoutCtx = ExpressResponse<unknown, {}>;
 export type ResponseWithCtx = ExpressResponse<unknown, { ctx: RequestContext }>;
 
 export type RequestContext = {
+  localFilesPath: string;
   db: Database;
   encryption: Encryption;
   logger: ReturnType<Logger['getHandler']>;

@@ -1,4 +1,4 @@
-import FileRouter from './file.js';
+import FileRouter from './file/router.js';
 
 /**********************************************************************************/
 

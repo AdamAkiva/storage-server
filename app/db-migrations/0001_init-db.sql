@@ -1,0 +1,1 @@
+ALTER TABLE "files" ADD COLUMN "path" varchar NOT NULL;

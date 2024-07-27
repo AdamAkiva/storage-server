@@ -1,21 +1,19 @@
 import {
-  asyncDebugWrapper,
   BusBoy,
   createWriteStream,
-  fileDebug,
   ILRDStorageError,
+  mime,
   pipeline,
+  randomUUID,
   StatusCodes,
   Transform,
   VALIDATION,
   type BusboyEvents,
-  type NextFunction,
   type Reject,
   type Request,
   type RequestContext,
   type Resolve,
-  type ResponseWithCtx,
-} from '../../utils/index.js';
+} from '../../../utils/index.js';
 
 /**********************************************************************************/
 
@@ -27,55 +25,7 @@ type EventHandler = (params: {
 
 /**********************************************************************************/
 
-export async function uploadFile(
-  req: Request,
-  res: ResponseWithCtx,
-  next: NextFunction
-) {
-  try {
-    await asyncDebugWrapper(
-      async () => {
-        await upload({
-          req: req,
-          ctx: res.locals.ctx,
-          eventHandler: readFileEventHandler,
-        });
-      },
-      { instance: fileDebug, msg: 'Uploading file' }
-    );
-
-    res.status(StatusCodes.SUCCESS).json('OK');
-  } catch (err) {
-    return next(err);
-  }
-}
-
-export async function uploadSecureFile(
-  req: Request,
-  res: ResponseWithCtx,
-  next: NextFunction
-) {
-  try {
-    await asyncDebugWrapper(
-      async () => {
-        await upload({
-          req: req,
-          ctx: res.locals.ctx,
-          eventHandler: readSecureFileEventHandler,
-        });
-      },
-      { instance: fileDebug, msg: 'Uploading encrypted file' }
-    );
-
-    res.status(StatusCodes.SUCCESS).json('OK');
-  } catch (err) {
-    return next(err);
-  }
-}
-
-/**********************************************************************************/
-
-async function upload(params: {
+export async function upload(params: {
   req: Request;
   ctx: RequestContext;
   eventHandler: EventHandler;
@@ -99,13 +49,15 @@ async function upload(params: {
   });
 }
 
-function readFileEventHandler(params: {
+/**********************************************************************************/
+
+export function uploadLocalFileEventHandler(params: {
   ctx: RequestContext;
   resolve: Resolve;
   reject: Reject;
 }): BusboyEvents['file'] {
   const {
-    ctx: { db },
+    ctx: { localFilesPath, db },
     resolve,
     reject,
   } = params;
@@ -116,8 +68,11 @@ function readFileEventHandler(params: {
 
   return async (_, file, info) => {
     try {
-      const { filename, encoding, mimeType } = info; // Save to database
+      const { filename, encoding, mimeType } = info;
+      const id = randomUUID();
+      const extension = mime.extension(mimeType);
       let fileSize = 0;
+      const filePath = `${localFilesPath}/${id}.${extension}`;
 
       const trackingStream = new Transform({
         transform: (chunk, _, cb) => {
@@ -136,11 +91,12 @@ function readFileEventHandler(params: {
       });
 
       const results = await Promise.allSettled([
-        pipeline(file, trackingStream, createWriteStream(filename)),
+        pipeline(file, trackingStream, createWriteStream(filePath)),
         handler.insert(fileModel).values({
           name: filename,
           encoding: encoding,
           mimeType: mimeType,
+          path: filePath,
           secured: false,
         }),
       ]);
@@ -174,13 +130,13 @@ function readFileEventHandler(params: {
   };
 }
 
-function readSecureFileEventHandler(params: {
+export function uploadLocalSecureFileEventHandler(params: {
   ctx: RequestContext;
   resolve: Resolve;
   reject: Reject;
 }): BusboyEvents['file'] {
   const {
-    ctx: { encryption, db },
+    ctx: { localFilesPath, encryption, db },
     resolve,
     reject,
   } = params;
@@ -191,10 +147,12 @@ function readSecureFileEventHandler(params: {
 
   return async (_, file, info) => {
     try {
-      const { filename, encoding, mimeType } = info; // Save to database
+      const { filename, encoding, mimeType } = info;
+      const id = randomUUID();
+      const extension = mime.extension(mimeType);
       let fileSize = 0;
-
       const cipher = encryption.getEncryptionPipe();
+      const filePath = `${localFilesPath}/${id}.${extension}`;
 
       const trackingStream = new Transform({
         transform: (chunk, _, cb) => {
@@ -216,11 +174,12 @@ function readSecureFileEventHandler(params: {
       });
 
       const results = await Promise.allSettled([
-        pipeline(file, trackingStream, createWriteStream(filename)),
+        pipeline(file, trackingStream, createWriteStream(filePath)),
         handler.insert(fileModel).values({
           name: filename,
           encoding: encoding,
           mimeType: mimeType,
+          path: filePath,
           secured: true,
         }),
       ]);

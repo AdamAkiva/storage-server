@@ -1,3 +1,4 @@
+import Aws from '@aws-sdk/client-s3';
 import {
   createCipheriv,
   createDecipheriv,
@@ -19,7 +20,9 @@ import {
 import { drizzle } from 'drizzle-orm/postgres-js';
 import express, { Router, json } from 'express';
 import helmet from 'helmet';
+import mime from 'mime-types';
 import pg from 'postgres';
+import Zod from 'zod';
 
 import EnvironmentVariables from './config.js';
 import {
@@ -68,6 +71,7 @@ import type {
 /**********************************************************************************/
 
 export {
+  Aws,
   BusBoy,
   ERR_CODES,
   EnvironmentVariables,
@@ -77,6 +81,7 @@ export {
   StatusCodes,
   Transform,
   VALIDATION,
+  Zod,
   asyncDebugWrapper,
   createCipheriv,
   createDecipheriv,
@@ -96,6 +101,7 @@ export {
   isProductionMode,
   isTestMode,
   json,
+  mime,
   objHasValues,
   pg,
   pipeline,

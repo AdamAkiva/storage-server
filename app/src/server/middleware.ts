@@ -1,5 +1,7 @@
 import {
+  ERR_CODES,
   ILRDStorageError,
+  pg,
   StatusCodes,
   strcasecmp,
   type NextFunction,
@@ -92,11 +94,45 @@ export function errorHandler(
       .status(StatusCodes.CONTENT_TOO_LARGE)
       .json('Request is too large');
   }
+  if (err instanceof pg.PostgresError) {
+    return handlePostgresError(err, res);
+  }
 
   return handleUnexpectedError(err, res);
 }
 
 /**********************************************************************************/
+
+function handlePostgresError(err: pg.PostgresError, res: ResponseWithCtx) {
+  const { FOREIGN_KEY_VIOLATION, UNIQUE_VIOLATION, TOO_MANY_CONNECTIONS } =
+    ERR_CODES.PG;
+  const logger = res.locals.ctx.logger;
+
+  switch (err.code) {
+    case FOREIGN_KEY_VIOLATION:
+    case UNIQUE_VIOLATION:
+      logger.fatal(
+        err,
+        'Should have been handled by the code and never get here. Check the' +
+          ' code implementation'
+      );
+      break;
+    case TOO_MANY_CONNECTIONS:
+      logger.fatal(
+        err,
+        'Exceeded database maximum connections.\nThis Should never happen,' +
+          ' check the server and database logs to understand why it happened'
+      );
+      break;
+    default:
+      logger.fatal(err, 'Unexpected database error');
+      break;
+  }
+
+  return res
+    .status(StatusCodes.SERVER_ERROR)
+    .json('Unexpected error, please try again');
+}
 
 function handleUnexpectedError(err: unknown, res: ResponseWithCtx) {
   const logger = res.locals.ctx.logger;

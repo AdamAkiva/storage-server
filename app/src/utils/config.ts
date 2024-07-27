@@ -16,6 +16,7 @@ type EnvironmentVariables = {
     httpRoute: string;
     healthCheck: { route: string; allowedHosts: Set<string> };
   };
+  localFilesPath: string;
   db: string;
   encryption: {
     key: string;
@@ -43,6 +44,7 @@ export default class EnvironmentManager {
           allowedHosts: new Set(process.env.ALLOWED_HOSTS!.split(',')),
         },
       },
+      localFilesPath: process.env.FILES_PATH!,
       db: process.env.DB_URL!,
       encryption: {
         key: process.env.ENCRYPTION_KEY_SEED!,
@@ -92,6 +94,7 @@ export default class EnvironmentManager {
       'HEALTH_CHECK_ROUTE',
       'ALLOWED_HOSTS',
       'DB_URL',
+      'FILES_PATH',
       'ENCRYPTION_KEY_SEED',
       'ENCRYPTION_IV_SEED',
     ];
