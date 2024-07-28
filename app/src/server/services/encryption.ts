@@ -11,7 +11,9 @@ export default class Encryption {
   readonly #iv;
   readonly #algorithm;
 
-  public constructor(key: string, iv: string) {
+  public constructor(params: { key: string; iv: string }) {
+    const { key, iv } = params;
+
     this.#key = createHash('sha512')
       .update(key)
       .digest('base64')

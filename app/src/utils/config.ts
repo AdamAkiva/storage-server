@@ -22,6 +22,12 @@ type EnvironmentVariables = {
     key: string;
     iv: string;
   };
+  aws: {
+    region: string;
+    accessKeyId: string;
+    secretAccessKey: string;
+    bucketName: string;
+  };
 };
 
 /**********************************************************************************/
@@ -49,6 +55,12 @@ export default class EnvironmentManager {
       encryption: {
         key: process.env.ENCRYPTION_KEY_SEED!,
         iv: process.env.ENCRYPTION_IV_SEED!,
+      },
+      aws: {
+        region: process.env.AWS_REGION!,
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+        bucketName: process.env.AWS_BUCKET_NAME!,
       },
     } as const satisfies EnvironmentVariables;
   }
@@ -97,6 +109,10 @@ export default class EnvironmentManager {
       'FILES_PATH',
       'ENCRYPTION_KEY_SEED',
       'ENCRYPTION_IV_SEED',
+      'AWS_REGION',
+      'AWS_ACCESS_KEY_ID',
+      'AWS_SECRET_ACCESS_KEY',
+      'AWS_BUCKET_NAME',
     ];
     if (mode === 'development') {
       environmentVariables.push('SERVER_DEBUG_PORT');

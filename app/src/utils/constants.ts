@@ -9,9 +9,11 @@ export const fileDebug = Debug('ilrd-storage:file');
 /**********************************************************************************/
 
 export const VALIDATION = {
-  BUFFER_SIZE: 1_024 * 1_024 * 2, // 2MB in bytes
-  MAX_FILE_SIZE: 1_024 * 1_024 * 20, // 2GB in bytes
+  BUFFER_SIZE: 1_024 * 1_024 * 5,
+  MAX_FILE_SIZE: 1_024 * 1_024 * 2_000,
   ALLOWED_STORAGE_MEDIUMS: ['local', 's3'],
+  ENCRYPTION_OPTIONS: ['encrypt', 'plain'],
+  LARGE_FILE_THRESHOLD: 1_024 * 1_024 * 100,
 } as const;
 
 /**********************************************************************************/

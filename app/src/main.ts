@@ -45,6 +45,7 @@ async function startServer() {
     mode,
     localFilesPath,
     db: dbUrl,
+    aws,
     server: serverEnv,
     encryption,
   } = new EnvironmentVariables().getEnvVariables();
@@ -59,6 +60,7 @@ async function startServer() {
       healthCheckQuery: 'SELECT NOW()',
       debugInstance: databaseDebug,
     },
+    awsParams: aws,
     encryptionParams: encryption,
     allowedMethods: new Set([
       'HEAD',

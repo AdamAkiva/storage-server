@@ -1,4 +1,8 @@
-import Aws from '@aws-sdk/client-s3';
+import {
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import {
   createCipheriv,
   createDecipheriv,
@@ -52,6 +56,7 @@ import type {
   ArrayWithAtLeastOneValue,
   BusboyEvents,
   DebugInstance,
+  EventHandler,
   Express,
   MaybeArray,
   Mode,
@@ -71,13 +76,15 @@ import type {
 /**********************************************************************************/
 
 export {
-  Aws,
   BusBoy,
   ERR_CODES,
   EnvironmentVariables,
+  GetObjectCommand,
   ILRDStorageError,
   Logger,
+  PutObjectCommand,
   Router,
+  S3Client,
   StatusCodes,
   Transform,
   VALIDATION,
@@ -116,6 +123,7 @@ export {
   type BusboyEvents,
   type DebugInstance,
   type DrizzleLogger,
+  type EventHandler,
   type Express,
   type MaybeArray,
   type Mode,

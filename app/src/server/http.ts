@@ -1,4 +1,5 @@
 import * as Middlewares from './middleware.js';
+import AWS from './services/aws.js';
 import Encryption from './services/encryption.js';
 
 import { Database } from '../db/index.js';
@@ -12,7 +13,6 @@ import {
   isTestMode,
   resolve,
   type AddressInfo,
-  type DebugInstance,
   type Express,
   type Logger,
   type Mode,
@@ -20,7 +20,6 @@ import {
   type Request,
   type ResponseWithoutCtx,
   type Server,
-  type pg,
 } from '../utils/index.js';
 
 /**********************************************************************************/
@@ -35,6 +34,7 @@ export default class HttpServer {
   readonly #mode;
 
   readonly #db;
+  readonly #aws;
   readonly #encryption;
   readonly #server;
   readonly #routes;
@@ -48,13 +48,9 @@ export default class HttpServer {
   public static async create(params: {
     mode: Mode;
     localFilesPath: string;
-    dbParams: {
-      url: string;
-      options?: pg.Options<{}>;
-      healthCheckQuery: string;
-      debugInstance: DebugInstance;
-    };
-    encryptionParams: { key: string; iv: string };
+    dbParams: ConstructorParameters<typeof Database>[0];
+    awsParams: ConstructorParameters<typeof AWS>[0];
+    encryptionParams: ConstructorParameters<typeof Encryption>[0];
     allowedMethods: Set<string>;
     allowedHosts: Set<string>;
     routes: { http: string; health: string };
@@ -69,6 +65,7 @@ export default class HttpServer {
       mode,
       localFilesPath,
       dbParams,
+      awsParams,
       encryptionParams,
       allowedMethods,
       allowedHosts,
@@ -79,10 +76,9 @@ export default class HttpServer {
 
     const db = new Database(dbParams);
 
-    const encryption = new Encryption(
-      encryptionParams.key,
-      encryptionParams.iv
-    );
+    const aws = new AWS(awsParams);
+
+    const encryption = new Encryption(encryptionParams);
 
     // Disable 'x-powered-by' should be pretty clear. The Reason for disabling etag
     // can be understood by this comprehensive answer: https://stackoverflow.com/a/67929691
@@ -93,6 +89,7 @@ export default class HttpServer {
       mode: mode,
       localFilesPath: localFilesPath,
       db: db,
+      aws: aws,
       encryption: encryption,
       server: server,
       routes: routes,
@@ -147,6 +144,10 @@ export default class HttpServer {
     return this.#db;
   }
 
+  public getAws() {
+    return this.#aws;
+  }
+
   public getEncryption() {
     return this.#encryption;
   }
@@ -159,16 +160,26 @@ export default class HttpServer {
     mode: Mode;
     localFilesPath: string;
     db: Database;
+    aws: AWS;
     encryption: Encryption;
     server: Server;
     routes: { http: string; health: string };
     logger: ReturnType<Logger['getHandler']>;
   }) {
-    const { mode, localFilesPath, db, encryption, server, routes, logger } =
-      params;
+    const {
+      mode,
+      localFilesPath,
+      db,
+      aws,
+      encryption,
+      server,
+      routes,
+      logger,
+    } = params;
 
     this.#mode = mode;
     this.#db = db;
+    this.#aws = aws;
     this.#encryption = encryption;
     this.#server = server;
     this.#routes = routes;
@@ -177,6 +188,7 @@ export default class HttpServer {
     this.#requestContext = {
       localFilesPath: localFilesPath,
       db: db,
+      aws: aws,
       encryption: encryption,
       logger: logger,
     };
