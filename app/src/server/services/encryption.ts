@@ -11,7 +11,9 @@ export default class Encryption {
   readonly #iv;
   readonly #algorithm;
 
-  public constructor(key: string, iv: string) {
+  public constructor(params: { key: string; iv: string }) {
+    const { key, iv } = params;
+
     this.#key = createHash('sha512')
       .update(key)
       .digest('base64')
@@ -23,11 +25,11 @@ export default class Encryption {
     this.#algorithm = 'aes-256-cbc';
   }
 
-  public getEncryptionPipe() {
+  public createEncryptionCipher() {
     return createCipheriv(this.#algorithm, this.#key, this.#iv);
   }
 
-  public getDecryptionPipe() {
+  public createDecryptionCipher() {
     return createDecipheriv(this.#algorithm, this.#key, this.#iv);
   }
 }

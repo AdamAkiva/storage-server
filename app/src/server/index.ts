@@ -1,6 +1,7 @@
 import HttpServer from './http.js';
+import AWS from './services/aws.js';
 import Encryption from './services/encryption.js';
 
 /**********************************************************************************/
 
-export { Encryption, HttpServer };
+export { AWS, Encryption, HttpServer };

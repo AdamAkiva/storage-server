@@ -1,4 +1,8 @@
-import Aws from '@aws-sdk/client-s3';
+import {
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import {
   createCipheriv,
   createDecipheriv,
@@ -8,7 +12,7 @@ import {
 import { createWriteStream } from 'node:fs';
 import { createServer } from 'node:http';
 import { resolve } from 'node:path';
-import { Transform } from 'node:stream';
+import { Readable, Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 
 import BusBoy from 'busboy';
@@ -51,7 +55,10 @@ import type {
   AddressInfo,
   ArrayWithAtLeastOneValue,
   BusboyEvents,
+  Cipher,
   DebugInstance,
+  Decipher,
+  EventHandler,
   Express,
   MaybeArray,
   Mode,
@@ -71,13 +78,16 @@ import type {
 /**********************************************************************************/
 
 export {
-  Aws,
   BusBoy,
   ERR_CODES,
   EnvironmentVariables,
+  GetObjectCommand,
   ILRDStorageError,
   Logger,
+  PutObjectCommand,
+  Readable,
   Router,
+  S3Client,
   StatusCodes,
   Transform,
   VALIDATION,
@@ -114,8 +124,11 @@ export {
   type AddressInfo,
   type ArrayWithAtLeastOneValue,
   type BusboyEvents,
+  type Cipher,
   type DebugInstance,
+  type Decipher,
   type DrizzleLogger,
+  type EventHandler,
   type Express,
   type MaybeArray,
   type Mode,

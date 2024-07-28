@@ -1,6 +1,7 @@
+import type { Cipher, Decipher } from 'node:crypto';
 import type { Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
-import type { TransformCallback } from 'node:stream';
+import type { Readable, TransformCallback } from 'node:stream';
 
 import type { BusboyEvents } from 'busboy';
 import type Debug from 'debug';
@@ -15,7 +16,7 @@ import type {
 import type Logger from '../logger.js';
 
 import type { Database } from '../../db/index.js';
-import type { Encryption } from '../../server/index.js';
+import type { AWS, Encryption } from '../../server/index.js';
 
 /******************************** General *****************************************/
 /**********************************************************************************/
@@ -35,6 +36,12 @@ export type ResolvedValue<T = any> = T extends (...args: any) => any
 export type Resolve = (value: PromiseLike<void> | void) => void;
 export type Reject = (reason?: unknown) => void;
 
+type EventHandler = (params: {
+  ctx: RequestContext;
+  resolve: Resolve;
+  reject: Reject;
+}) => BusboyEvents['file'];
+
 export type Mode = 'development' | 'production' | 'test';
 
 /**************************** Package related *************************************/
@@ -46,6 +53,7 @@ export type ResponseWithCtx = ExpressResponse<unknown, { ctx: RequestContext }>;
 export type RequestContext = {
   localFilesPath: string;
   db: Database;
+  aws: AWS;
   encryption: Encryption;
   logger: ReturnType<Logger['getHandler']>;
 };
@@ -57,8 +65,12 @@ export type DebugInstance = ReturnType<typeof Debug>;
 export {
   type AddressInfo,
   type BusboyEvents,
+  type Cipher,
+  type Decipher,
+  type EventHandler,
   type Express,
   type NextFunction,
+  type Readable,
   type Request,
   type RequestHandler,
   type Server,

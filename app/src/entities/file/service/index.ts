@@ -1,13 +1,21 @@
 import {
-  upload,
+  uploadLocal,
   uploadLocalFileEventHandler,
   uploadLocalSecureFileEventHandler,
-} from './upload.js';
+} from './upload.local.js';
+import {
+  uploadS3,
+  uploadS3FileEventHandler,
+  uploadS3SecureFileEventHandler,
+} from './upload.s3.js';
 
 /**********************************************************************************/
 
 export {
-  upload,
+  uploadLocal,
   uploadLocalFileEventHandler,
   uploadLocalSecureFileEventHandler,
+  uploadS3,
+  uploadS3FileEventHandler,
+  uploadS3SecureFileEventHandler,
 };

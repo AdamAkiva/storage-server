@@ -65,6 +65,10 @@ services:
       - DB_URL=postgres://admin:admin@ilrd-storage-pg-dev:5432/ilrd-storage-dev
       - DB_TEST_URL=postgres://admin:admin@ilrd-storage-pg-test:5432/ilrd-storage-test
       - FILES_PATH=/home/node/files
+      - AWS_REGION=PH
+      - AWS_ACCESS_KEY_ID=PH
+      - AWS_SECRET_ACCESS_KEY=PH
+      - AWS_BUCKET_NAME=PH
 
       # Should be random and secure values (as much as possible)
       # In development/test environment we don't care
