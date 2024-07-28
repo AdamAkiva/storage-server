@@ -18,6 +18,7 @@ import { pipeline } from 'node:stream/promises';
 import BusBoy from 'busboy';
 import {
   type Logger as DrizzleLogger,
+  eq,
   getTableColumns,
   sql,
 } from 'drizzle-orm';
@@ -101,6 +102,7 @@ export {
   databaseDebug,
   debugWrapper,
   drizzle,
+  eq,
   express,
   fileDebug,
   filterNullAndUndefined,

@@ -4,7 +4,6 @@ import * as FileController from './controller.js';
 
 /**********************************************************************************/
 
-export default Router().post(
-  '/:storageMedium/:encryption',
-  FileController.uploadFile
-);
+export default Router()
+  .get('/:id/:storageMedium/:encryption', FileController.readFile)
+  .post('/:storageMedium/:encryption', FileController.uploadFile);

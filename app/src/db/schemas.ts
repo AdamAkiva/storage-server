@@ -20,9 +20,11 @@ export const fileModel = pgTable('files', {
   mimeType: varchar('mime_type').notNull(),
   storageMedium: varchar('storage_medium', {
     enum: VALIDATION.ALLOWED_STORAGE_MEDIUMS,
-  }).default('local'),
+  })
+    .default('disk')
+    .notNull(),
   path: varchar('path').notNull(),
-  secured: boolean('secured').default(false),
+  secured: boolean('secured').default(false).notNull(),
   createdAt: timestamp('created_at', {
     mode: 'string',
     precision: 3,

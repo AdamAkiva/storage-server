@@ -43,7 +43,7 @@ async function startServer() {
 
   const {
     mode,
-    localFilesPath,
+    diskFilesPath,
     db: dbUrl,
     aws,
     server: serverEnv,
@@ -54,7 +54,7 @@ async function startServer() {
 
   const server = await HttpServer.create({
     mode: mode,
-    localFilesPath: localFilesPath,
+    diskFilesPath: diskFilesPath,
     dbParams: {
       url: dbUrl,
       healthCheckQuery: 'SELECT NOW()',

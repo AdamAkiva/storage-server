@@ -33,12 +33,12 @@ export type ResolvedValue<T = any> = T extends (...args: any) => any
   ? PromiseFulfilledResult<Awaited<ReturnType<T>>>
   : PromiseFulfilledResult<Awaited<T>>;
 
-export type Resolve = (value: PromiseLike<void> | void) => void;
+export type Resolve<T = unknown> = (value: PromiseLike<T> | T) => void;
 export type Reject = (reason?: unknown) => void;
 
-type EventHandler = (params: {
+type EventHandler<T = unknown> = (params: {
   ctx: RequestContext;
-  resolve: Resolve;
+  resolve: Resolve<T>;
   reject: Reject;
 }) => BusboyEvents['file'];
 
@@ -51,7 +51,7 @@ export type ResponseWithoutCtx = ExpressResponse<unknown, {}>;
 export type ResponseWithCtx = ExpressResponse<unknown, { ctx: RequestContext }>;
 
 export type RequestContext = {
-  localFilesPath: string;
+  diskFilesPath: string;
   db: Database;
   aws: AWS;
   encryption: Encryption;

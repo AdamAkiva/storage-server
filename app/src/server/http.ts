@@ -47,7 +47,7 @@ export default class HttpServer {
 
   public static async create(params: {
     mode: Mode;
-    localFilesPath: string;
+    diskFilesPath: string;
     dbParams: ConstructorParameters<typeof Database>[0];
     awsParams: ConstructorParameters<typeof AWS>[0];
     encryptionParams: ConstructorParameters<typeof Encryption>[0];
@@ -63,7 +63,7 @@ export default class HttpServer {
   }) {
     const {
       mode,
-      localFilesPath,
+      diskFilesPath,
       dbParams,
       awsParams,
       encryptionParams,
@@ -87,7 +87,7 @@ export default class HttpServer {
 
     const self = new HttpServer({
       mode: mode,
-      localFilesPath: localFilesPath,
+      diskFilesPath: diskFilesPath,
       db: db,
       aws: aws,
       encryption: encryption,
@@ -158,7 +158,7 @@ export default class HttpServer {
   // async creation
   private constructor(params: {
     mode: Mode;
-    localFilesPath: string;
+    diskFilesPath: string;
     db: Database;
     aws: AWS;
     encryption: Encryption;
@@ -166,16 +166,8 @@ export default class HttpServer {
     routes: { http: string; health: string };
     logger: ReturnType<Logger['getHandler']>;
   }) {
-    const {
-      mode,
-      localFilesPath,
-      db,
-      aws,
-      encryption,
-      server,
-      routes,
-      logger,
-    } = params;
+    const { mode, diskFilesPath, db, aws, encryption, server, routes, logger } =
+      params;
 
     this.#mode = mode;
     this.#db = db;
@@ -186,7 +178,7 @@ export default class HttpServer {
     this.#logger = logger;
 
     this.#requestContext = {
-      localFilesPath: localFilesPath,
+      diskFilesPath: diskFilesPath,
       db: db,
       aws: aws,
       encryption: encryption,

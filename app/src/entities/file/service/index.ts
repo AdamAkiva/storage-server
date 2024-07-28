@@ -1,21 +1,23 @@
 import {
-  uploadLocal,
-  uploadLocalFileEventHandler,
-  uploadLocalSecureFileEventHandler,
-} from './upload.local.js';
-import {
-  uploadS3,
-  uploadS3FileEventHandler,
-  uploadS3SecureFileEventHandler,
-} from './upload.s3.js';
+  uploadFileToDiskEventHandler,
+  uploadFileToS3EventHandler,
+  uploadSecureFileToDiskEventHandler,
+  uploadSecureFileToS3EventHandler,
+  uploadToDisk,
+  uploadToS3,
+} from './upload.js';
+
+import { readFileFromDisk, readFileFromS3 } from './download.js';
 
 /**********************************************************************************/
 
 export {
-  uploadLocal,
-  uploadLocalFileEventHandler,
-  uploadLocalSecureFileEventHandler,
-  uploadS3,
-  uploadS3FileEventHandler,
-  uploadS3SecureFileEventHandler,
+  readFileFromDisk,
+  readFileFromS3,
+  uploadFileToDiskEventHandler,
+  uploadFileToS3EventHandler,
+  uploadSecureFileToDiskEventHandler,
+  uploadSecureFileToS3EventHandler,
+  uploadToDisk,
+  uploadToS3,
 };

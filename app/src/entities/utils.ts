@@ -1,9 +1,9 @@
 import {
   type Cipher,
   type Decipher,
-  type Readable,
   ERR_CODES,
   ILRDStorageError,
+  type Readable,
   StatusCodes,
   Zod,
   pg,
@@ -130,6 +130,17 @@ export function entityNotFoundError(
     `${entityName} '${id}' does not exist`,
     StatusCodes.NOT_FOUND
   );
+}
+
+export function storageMediumMismatchError() {
+  return new ILRDStorageError(
+    'File storage medium mismatch',
+    StatusCodes.BAD_REQUEST
+  );
+}
+
+export function streamFileError() {
+  return new ILRDStorageError('Error streaming file', StatusCodes.SERVER_ERROR);
 }
 
 export function encryptStream(cipher: Cipher) {
