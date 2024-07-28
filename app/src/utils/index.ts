@@ -12,7 +12,7 @@ import {
 import { createWriteStream } from 'node:fs';
 import { createServer } from 'node:http';
 import { resolve } from 'node:path';
-import { Transform } from 'node:stream';
+import { Readable, Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 
 import BusBoy from 'busboy';
@@ -55,7 +55,9 @@ import type {
   AddressInfo,
   ArrayWithAtLeastOneValue,
   BusboyEvents,
+  Cipher,
   DebugInstance,
+  Decipher,
   EventHandler,
   Express,
   MaybeArray,
@@ -83,6 +85,7 @@ export {
   ILRDStorageError,
   Logger,
   PutObjectCommand,
+  Readable,
   Router,
   S3Client,
   StatusCodes,
@@ -121,7 +124,9 @@ export {
   type AddressInfo,
   type ArrayWithAtLeastOneValue,
   type BusboyEvents,
+  type Cipher,
   type DebugInstance,
+  type Decipher,
   type DrizzleLogger,
   type EventHandler,
   type Express,

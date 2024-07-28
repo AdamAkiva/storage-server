@@ -1,6 +1,7 @@
+import type { Cipher, Decipher } from 'node:crypto';
 import type { Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
-import type { TransformCallback } from 'node:stream';
+import type { Readable, TransformCallback } from 'node:stream';
 
 import type { BusboyEvents } from 'busboy';
 import type Debug from 'debug';
@@ -64,9 +65,12 @@ export type DebugInstance = ReturnType<typeof Debug>;
 export {
   type AddressInfo,
   type BusboyEvents,
+  type Cipher,
+  type Decipher,
   type EventHandler,
   type Express,
   type NextFunction,
+  type Readable,
   type Request,
   type RequestHandler,
   type Server,

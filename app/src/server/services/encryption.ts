@@ -25,11 +25,11 @@ export default class Encryption {
     this.#algorithm = 'aes-256-cbc';
   }
 
-  public getEncryptionPipe() {
+  public createEncryptionCipher() {
     return createCipheriv(this.#algorithm, this.#key, this.#iv);
   }
 
-  public getDecryptionPipe() {
+  public createDecryptionCipher() {
     return createDecipheriv(this.#algorithm, this.#key, this.#iv);
   }
 }

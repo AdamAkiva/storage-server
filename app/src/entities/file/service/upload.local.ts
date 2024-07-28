@@ -1,10 +1,11 @@
+import { encryptStream } from '../../utils.js';
+
 import {
   BusBoy,
   createWriteStream,
   mime,
   pipeline,
   randomUUID,
-  Transform,
   VALIDATION,
   type BusboyEvents,
   type EventHandler,
@@ -60,9 +61,7 @@ export function uploadLocalFileEventHandler(params: {
   return async (_, file, info) => {
     try {
       const { filename, encoding, mimeType } = info;
-      const id = randomUUID();
-      const extension = mime.extension(mimeType);
-      const filePath = `${localFilesPath}/${id}.${extension}`;
+      const filePath = `${localFilesPath}/${randomUUID()}.${mime.extension(mimeType)}`;
 
       const results = await Promise.allSettled([
         pipeline(file, createWriteStream(filePath)),
@@ -112,22 +111,11 @@ export function uploadLocalSecureFileEventHandler(params: {
   return async (_, file, info) => {
     try {
       const { filename, encoding, mimeType } = info;
-      const id = randomUUID();
-      const extension = mime.extension(mimeType);
-      const cipher = encryption.getEncryptionPipe();
-      const filePath = `${localFilesPath}/${id}.${extension}`;
-
-      const trackingStream = new Transform({
-        transform: (chunk, _, cb) => {
-          return cb(null, cipher.update(chunk));
-        },
-        flush: (cb) => {
-          return cb(null, cipher.final());
-        },
-      });
+      const filePath = `${localFilesPath}/${randomUUID()}.${mime.extension(mimeType)}`;
+      const cipher = encryption.createEncryptionCipher();
 
       const results = await Promise.allSettled([
-        pipeline(file, trackingStream, createWriteStream(filePath)),
+        pipeline(file, encryptStream(cipher), createWriteStream(filePath)),
         handler.insert(fileModel).values({
           name: filename,
           encoding: encoding,

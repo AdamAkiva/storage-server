@@ -1,4 +1,7 @@
 import {
+  type Cipher,
+  type Decipher,
+  type Readable,
   ERR_CODES,
   ILRDStorageError,
   StatusCodes,
@@ -127,4 +130,18 @@ export function entityNotFoundError(
     `${entityName} '${id}' does not exist`,
     StatusCodes.NOT_FOUND
   );
+}
+
+export function encryptStream(cipher: Cipher) {
+  return async function* (source: Readable) {
+    for await (const chunk of source) {
+      yield cipher.update(chunk);
+    }
+
+    yield cipher.final();
+  };
+}
+
+export function decryptStream(decipher: Decipher) {
+  return encryptStream(decipher);
 }

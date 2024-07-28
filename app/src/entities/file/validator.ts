@@ -26,7 +26,7 @@ const { ALLOWED_STORAGE_MEDIUMS, ENCRYPTION_OPTIONS, MAX_FILE_SIZE } =
 export function uploadFile(req: Request) {
   const { body, params, query } = req;
 
-  if (req.headers['content-length']) {
+  if (!req.headers['content-length']) {
     throw new ILRDStorageError(
       'Missing content length header',
       StatusCodes.BAD_REQUEST

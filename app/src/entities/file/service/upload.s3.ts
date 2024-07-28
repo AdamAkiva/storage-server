@@ -1,9 +1,11 @@
+import { encryptStream } from '../../utils.js';
+
 import {
   BusBoy,
   mime,
   PutObjectCommand,
   randomUUID,
-  Transform,
+  Readable,
   VALIDATION,
   type BusboyEvents,
   type EventHandler,
@@ -60,9 +62,7 @@ export function uploadS3FileEventHandler(params: {
   return async (_, file, info) => {
     try {
       const { filename, encoding, mimeType } = info;
-      const id = randomUUID();
-      const extension = mime.extension(mimeType);
-      const newFileName = `${id}.${extension}`;
+      const newFileName = `${randomUUID()}.${mime.extension(mimeType)}`;
 
       const results = await Promise.allSettled([
         s3Client.send(
@@ -119,26 +119,15 @@ export function uploadS3SecureFileEventHandler(params: {
   return async (_, file, info) => {
     try {
       const { filename, encoding, mimeType } = info;
-      const id = randomUUID();
-      const extension = mime.extension(mimeType);
-      const cipher = encryption.getEncryptionPipe();
-      const newFileName = `${id}.${extension}`;
-
-      const trackingStream = new Transform({
-        transform: (chunk, _, cb) => {
-          return cb(null, cipher.update(chunk));
-        },
-        flush: (cb) => {
-          return cb(null, cipher.final());
-        },
-      });
+      const newFileName = `${randomUUID()}.${mime.extension(mimeType)}`;
+      const cipher = encryption.createEncryptionCipher();
 
       const results = await Promise.allSettled([
         client.send(
           new PutObjectCommand({
             Bucket: aws.getBucketName(),
             Key: newFileName,
-            Body: file.pipe(trackingStream),
+            Body: Readable.from(encryptStream(cipher)(file)),
           })
         ),
         handler.insert(fileModel).values({
