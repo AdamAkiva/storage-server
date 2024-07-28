@@ -1,0 +1,1 @@
+ALTER TABLE "files" ADD COLUMN "storage_medium" varchar NOT NULL;

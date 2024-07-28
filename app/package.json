@@ -7,8 +7,8 @@
   "scripts": {
     "test": "printf 'Application has no tests\n' && exit 1",
     "lint": "tsc --project ./tsconfig.lint.json --noEmit && eslint 'src/**/*.ts'",
-    "generate-migrations": "drizzle-kit generate --name=init-db --config=./db-migrations/drizzle.config.ts",
-    "commit-migrations": "drizzle-kit migrate --config=./db-migrations/drizzle.config.ts",
+    "generate-migrations": "tsx ./node_modules/.bin/drizzle-kit generate --name=init-db --config=./db-migrations/drizzle.config.ts",
+    "commit-migrations": "tsx ./node_modules/.bin/drizzle-kit migrate --config=./db-migrations/drizzle.config.ts",
     "generate-types": "swagger-typescript-api --modular --no-client -o ./src/utils/types -p ./src/api-docs/openapi.yml && mv ./src/utils/types/data-contracts.ts ./src/utils/types/api.ts",
     "generate-openapi": "redocly build-docs ./src/api-docs/openapi.yml -o ./src/api-docs/openapi.html",
     "check-global-updates": "ncu -g",
@@ -51,6 +51,7 @@
     "npm-check-updates": "~16.14.20",
     "prettier": "~3.3.3",
     "swagger-typescript-api": "~13.0.13",
+    "tsx": "~4.16.2",
     "typescript": "~5.5.4",
     "typescript-eslint": "~7.17.0"
   },

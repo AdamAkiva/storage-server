@@ -6,6 +6,11 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 
+// There was an issue with this being imported using the migrations.
+// It was resolved using this solution:
+// https://github.com/drizzle-team/drizzle-kit-mirror/issues/55#issuecomment-1782555333
+import { VALIDATION } from '../utils/constants.js';
+
 /**********************************************************************************/
 
 export const fileModel = pgTable('files', {
@@ -13,8 +18,11 @@ export const fileModel = pgTable('files', {
   name: varchar('name').notNull(),
   encoding: varchar('encoding').notNull(),
   mimeType: varchar('mime_type').notNull(),
+  storageMedium: varchar('storage_medium', {
+    enum: VALIDATION.ALLOWED_STORAGE_MEDIUMS,
+  }).default('local'),
   path: varchar('path').notNull(),
-  secured: boolean('secured').notNull(),
+  secured: boolean('secured').default(false),
   createdAt: timestamp('created_at', {
     mode: 'string',
     precision: 3,
