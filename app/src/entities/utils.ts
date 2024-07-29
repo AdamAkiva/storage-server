@@ -1,8 +1,8 @@
 import {
   ERR_CODES,
-  ILRDStorageError,
   pg,
   StatusCodes,
+  StorageServerError,
   unlink,
   VALIDATION,
   Zod,
@@ -60,7 +60,7 @@ function parseErrors(errs: Zod.ZodError<unknown>[]) {
     // This removes the last delimiter (if the string ended with one)
     .replace(/, $/, '');
 
-  return new ILRDStorageError(errMsg, StatusCodes.BAD_REQUEST);
+  return new StorageServerError(errMsg, StatusCodes.BAD_REQUEST);
 }
 
 function parseErrorMessages(issues: Zod.ZodIssue[], delimiter: string): string {
@@ -119,7 +119,7 @@ export function entityNotFoundError(
     err instanceof pg.PostgresError &&
     err.code === ERR_CODES.PG.FOREIGN_KEY_VIOLATION
   ) {
-    return new ILRDStorageError(
+    return new StorageServerError(
       // TODO Check that parameters[0] is valid
       `${entityName} '${id ?? err.parameters[0]}' does not exist`,
       StatusCodes.NOT_FOUND
@@ -128,21 +128,21 @@ export function entityNotFoundError(
     return err;
   }
 
-  return new ILRDStorageError(
+  return new StorageServerError(
     `${entityName} '${id}' does not exist`,
     StatusCodes.NOT_FOUND
   );
 }
 
 export function storageMediumMismatchError() {
-  return new ILRDStorageError(
+  return new StorageServerError(
     'File storage medium mismatch',
     StatusCodes.BAD_REQUEST
   );
 }
 
 export function fileSizeTooLargeError() {
-  return new ILRDStorageError(
+  return new StorageServerError(
     'File size is too large',
     StatusCodes.BAD_REQUEST
   );
@@ -151,7 +151,7 @@ export function fileSizeTooLargeError() {
 export function streamFileError(err: unknown) {
   // eslint-disable-next-line @typescript-eslint/no-unused-expressions
   err; // TODO
-  return new ILRDStorageError('Error streaming file', StatusCodes.SERVER_ERROR);
+  return new StorageServerError('Error streaming file', StatusCodes.SERVER_ERROR);
 }
 
 export function checkFileSize(params: {

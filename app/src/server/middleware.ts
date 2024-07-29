@@ -1,8 +1,8 @@
 import {
   ERR_CODES,
-  ILRDStorageError,
   pg,
   StatusCodes,
+  StorageServerError,
   strcasecmp,
   type NextFunction,
   type Request,
@@ -84,9 +84,9 @@ export function errorHandler(
   }
 
   // The order is based on two things, type fallback and the chances of each error
-  // happening. For example, ILRDStorageError should be the most common error
+  // happening. For example, StorageServerError should be the most common error
   // reason, and it should be the first from that perspective
-  if (err instanceof ILRDStorageError) {
+  if (err instanceof StorageServerError) {
     return res.status(err.getCode()).json(err.getMessage());
   }
   if (err instanceof Error && !strcasecmp(err.name, 'PayloadTooLargeError')) {

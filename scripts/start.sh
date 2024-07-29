@@ -38,7 +38,7 @@ start() {
     # file(s) take on the permission of the root folder, hence the current user
     mkdir -p "$DB_DATA_FOLDER" "$FILES_FOLDER" "$NPM_CACHE_FOLDER";
 
-    printf "Building Ilrd Storage...\n\n";
+    printf "Building Storage server...\n\n";
 
     printf "Do you wish to recreate the images? (y/n) ";
     read -r opn;
@@ -71,4 +71,4 @@ cd "$ROOT_DIR" || exit 1;
 check_prerequisites;
 start;
 
-printf "\nIlrd Storage is running\n\n";
+printf "\nStorage server is running\n\n";

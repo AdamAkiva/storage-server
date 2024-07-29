@@ -1,14 +1,14 @@
 services:
-  ilrd-storage-pg-dev:
-    hostname: ilrd-storage-pg-dev
-    container_name: ilrd-storage-pg-dev
+  storage-server-pg-dev:
+    hostname: storage-server-pg-dev
+    container_name: storage-server-pg-dev
     restart: unless-stopped
     image: postgres:14-alpine
     user: ${UID}:${GID}
     environment:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=admin
-      - POSTGRES_DB=ilrd-storage-dev
+      - POSTGRES_DB=storage-server-dev
     volumes:
       - ./dev-data/pg:/var/lib/postgresql/data:rw
       # See: https://github.com/docker-library/docs/blob/master/postgres/README.md#arbitrary---user-notes
@@ -17,26 +17,26 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     healthcheck:
-      test: pg_isready -p 5432 -U admin -d ilrd-storage-dev
+      test: pg_isready -p 5432 -U admin -d storage-server-dev
       interval: 3s
       timeout: 2s
       retries: 5
     command: postgres -p 5432 -c log_statement=all
 
-  ilrd-storage-pg-test:
-    hostname: ilrd-storage-pg-test
-    container_name: ilrd-storage-pg-test
+  storage-server-pg-test:
+    hostname: storage-server-pg-test
+    container_name: storage-server-pg-test
     restart: unless-stopped
     image: postgres:14-alpine
     environment:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=admin
-      - POSTGRES_DB=ilrd-storage-test
+      - POSTGRES_DB=storage-server-test
     volumes:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     healthcheck:
-      test: pg_isready -p 5432 -U admin -d ilrd-storage-test
+      test: pg_isready -p 5432 -U admin -d storage-server-test
       interval: 3s
       timeout: 2s
       retries: 5
@@ -44,9 +44,9 @@ services:
 
 ##################################################################################
 
-  ilrd-storage-dev:
-    hostname: ilrd-storage-dev
-    container_name: ilrd-storage-dev
+  storage-server-dev:
+    hostname: storage-server-dev
+    container_name: storage-server-dev
     restart: unless-stopped
     build:
       context: ./
@@ -62,8 +62,8 @@ services:
       - HTTP_ROUTE=v0/api
       - HEALTH_CHECK_ROUTE=health
       - ALLOWED_HOSTS=127.0.0.1,::,localhost
-      - DB_URL=postgres://admin:admin@ilrd-storage-pg-dev:5432/ilrd-storage-dev
-      - DB_TEST_URL=postgres://admin:admin@ilrd-storage-pg-test:5432/ilrd-storage-test
+      - DB_URL=postgres://admin:admin@storage-server-pg-dev:5432/storage-server-dev
+      - DB_TEST_URL=postgres://admin:admin@storage-server-pg-test:5432/storage-server-test
       - MAX_FILE_SIZE=2097152 # 2mb
       - BUFFER_SIZE=2147483648 # 2gb
       - DISK_FILES_PATH=/home/node/files
@@ -81,7 +81,7 @@ services:
       - NODE_NO_WARNINGS=0
       - UV_THREADPOOL_SIZE=${UV_THREADPOOL_SIZE}
     volumes:
-      - ./app:/home/node/ilrd-storage:rw
+      - ./app:/home/node/storage-server:rw
       - ./dev-data/files:/home/node/files
       # Volume npm cache to speed up the npm install. This should allow cache reuse
       # whenever node_modules are removed.
@@ -111,5 +111,5 @@ services:
       start_period: 30s
     # Uncomment for the database(s) you've chosen
     depends_on:
-      ilrd-storage-pg-dev:
+      storage-server-pg-dev:
         condition: service_healthy

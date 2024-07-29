@@ -68,4 +68,4 @@ remove;
 remove_node_modules;
 remove_database;
 
-printf '\nRemoved Ilrd storage\n\n';
+printf '\nRemoved Storage server\n\n';

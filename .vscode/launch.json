@@ -7,7 +7,7 @@
       "request": "attach",
       "port": 9229,
       "restart": true,
-      "remoteRoot": "/home/node/ilrd-storage",
+      "remoteRoot": "/home/node/storage-server",
       "localRoot": "${workspaceFolder}",
       "resolveSourceMapLocations": [
         "${workspaceFolder}/**",

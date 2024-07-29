@@ -7,7 +7,7 @@ RUN apk add --no-cache curl tini
 FROM base AS app-dev
 
 # Set the workdir
-WORKDIR /home/node/ilrd-storage
+WORKDIR /home/node/storage-server
 
 # Copy the entrypoint script to a non-volumed folder
 COPY ./scripts/entrypoint.sh /home/node/entrypoint.sh

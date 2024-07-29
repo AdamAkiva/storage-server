@@ -1,7 +1,7 @@
 {
-  "name": "ilrd-storage",
+  "name": "storage-server",
   "version": "0.0.0",
-  "description": "ILRD Storage",
+  "description": "Storage server which allows to save files to different storage mediums efficiently",
   "type": "module",
   "main": "./src/main.ts",
   "scripts": {
@@ -60,23 +60,23 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "https://dev.infinitylabs.co.il/adam.akiva/ilrd-storage"
+    "url": "https://github.com/AdamAkiva/storage-server"
   },
   "bugs": {
-    "url": "https://dev.infinitylabs.co.il/adam.akiva/ilrd-storage/issues"
+    "url": "https://github.com/AdamAkiva/storage-server/issues"
   },
   "maintainers": [
     {
       "name": "Adam Akiva",
-      "email": "adam.akiva@infinitylabs.co.il",
-      "url": "https://dev.infinitylabs.co.il/adam.akiva"
+      "email": "adam.akiva14@gmail.com",
+      "url": "https://github.com/AdamAkiva"
     }
   ],
   "contributors": [
     {
       "name": "Adam Akiva",
-      "email": "adam.akiva@infinitylabs.co.il",
-      "url": "https://dev.infinitylabs.co.il/adam.akiva"
+      "email": "adam.akiva14@gmail.com",
+      "url": "https://github.com/AdamAkiva"
     }
   ]
 }

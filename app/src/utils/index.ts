@@ -41,7 +41,7 @@ import {
   generalDebug,
   type AllowedStorageMediums,
 } from './constants.js';
-import ILRDStorageError from './error.js';
+import StorageServerError from './error.js';
 import {
   asyncDebugWrapper,
   debugWrapper,
@@ -86,15 +86,12 @@ export {
   BusBoy,
   ERR_CODES,
   EnvironmentVariables,
-  GetObjectCommand,
-  ILRDStorageError,
-  Logger,
+  GetObjectCommand, Logger,
   PutObjectCommand,
   Readable,
   Router,
   S3Client,
-  StatusCodes,
-  Transform,
+  StatusCodes, StorageServerError, Transform,
   VALIDATION,
   Zod,
   asyncDebugWrapper,
@@ -153,5 +150,6 @@ export {
   type Server,
   type TransformCallback,
   type UnknownObject,
-  type WriteStream,
+  type WriteStream
 };
+

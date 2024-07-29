@@ -1,4 +1,4 @@
-export default class ILRDStorageError extends Error {
+export default class StorageServer extends Error {
   readonly #msg;
   readonly #code;
 
