@@ -1,8 +1,10 @@
 import type { Cipher, Decipher } from 'node:crypto';
+import type { WriteStream } from 'node:fs';
 import type { Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import type { Readable, TransformCallback } from 'node:stream';
 
+import type { NodeJsClient } from '@smithy/types';
 import type { BusboyEvents } from 'busboy';
 import type Debug from 'debug';
 import type {
@@ -36,12 +38,6 @@ export type ResolvedValue<T = any> = T extends (...args: any) => any
 export type Resolve<T = unknown> = (value: PromiseLike<T> | T) => void;
 export type Reject = (reason?: unknown) => void;
 
-type EventHandler<T = unknown> = (params: {
-  ctx: RequestContext;
-  resolve: Resolve<T>;
-  reject: Reject;
-}) => BusboyEvents['file'];
-
 export type Mode = 'development' | 'production' | 'test';
 
 /**************************** Package related *************************************/
@@ -67,12 +63,13 @@ export {
   type BusboyEvents,
   type Cipher,
   type Decipher,
-  type EventHandler,
   type Express,
   type NextFunction,
+  type NodeJsClient,
   type Readable,
   type Request,
   type RequestHandler,
   type Server,
   type TransformCallback,
+  type WriteStream,
 };

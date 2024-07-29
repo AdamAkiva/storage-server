@@ -1,12 +1,12 @@
 import {
-  type Cipher,
-  type Decipher,
   ERR_CODES,
   ILRDStorageError,
-  type Readable,
-  StatusCodes,
-  Zod,
   pg,
+  StatusCodes,
+  unlink,
+  VALIDATION,
+  Zod,
+  type Reject,
 } from '../utils/index.js';
 
 /***************************** Validation related *********************************/
@@ -17,6 +17,8 @@ export type ValidatedType<T extends Zod.ZodType> = Zod.SafeParseSuccess<
 >;
 
 export const emptyObjectSchema = Zod.object({}).strict();
+
+const { MAX_FILE_SIZE, DELETE_FILE_DELAY } = VALIDATION;
 
 /**********************************************************************************/
 
@@ -139,20 +141,37 @@ export function storageMediumMismatchError() {
   );
 }
 
-export function streamFileError() {
+export function fileSizeTooLargeError() {
+  return new ILRDStorageError(
+    'File size is too large',
+    StatusCodes.BAD_REQUEST
+  );
+}
+
+export function streamFileError(err: unknown) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+  err; // TODO
   return new ILRDStorageError('Error streaming file', StatusCodes.SERVER_ERROR);
 }
 
-export function encryptStream(cipher: Cipher) {
-  return async function* (source: Readable) {
-    for await (const chunk of source) {
-      yield cipher.update(chunk);
-    }
+export function checkFileSize(params: {
+  fileSize: number;
+  filePath?: string;
+  reject: Reject;
+}) {
+  const { fileSize, filePath, reject } = params;
 
-    yield cipher.final();
-  };
-}
+  if (fileSize < MAX_FILE_SIZE) {
+    return;
+  }
 
-export function decryptStream(decipher: Decipher) {
-  return encryptStream(decipher);
+  if (filePath) {
+    setTimeout(() => {
+      unlink(filePath).catch(() => {
+        // On purpose
+      });
+    }, DELETE_FILE_DELAY);
+  }
+
+  reject(fileSizeTooLargeError());
 }

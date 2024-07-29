@@ -2,7 +2,6 @@ import {
   asyncDebugWrapper,
   debugWrapper,
   fileDebug,
-  ILRDStorageError,
   StatusCodes,
   type NextFunction,
   type Request,
@@ -14,15 +13,14 @@ import * as Validator from './validator.js';
 
 /**********************************************************************************/
 
+const readFileMap = {
+  disk: 'readFileFromDiskHandler',
+  s3: 'readFileFromS3Handler',
+} as const;
+
 const uploadFileMap = {
-  disk: {
-    plain: 'uploadFileToDiskEventHandler',
-    encrypt: 'uploadSecureFileToDiskEventHandler',
-  },
-  s3: {
-    plain: 'uploadFileToS3EventHandler',
-    encrypt: 'uploadSecureFileToS3EventHandler',
-  },
+  disk: 'uploadFileToDiskHandler',
+  s3: 'uploadFileToS3EventHandler',
 } as const;
 
 /**********************************************************************************/
@@ -33,7 +31,7 @@ export async function readFile(
   next: NextFunction
 ) {
   try {
-    const params = debugWrapper(
+    const { id, storageMedium } = debugWrapper(
       () => {
         return Validator.readFile(req);
       },
@@ -42,21 +40,16 @@ export async function readFile(
 
     await asyncDebugWrapper(
       async () => {
-        switch (params.storageMedium) {
-          case 'disk':
-            return await Service.readFileFromDisk(params.id, res);
-          case 's3':
-            return await Service.readFileFromS3(params.id, res);
-          default:
-            throw new ILRDStorageError(
-              'Unsupported storage medium',
-              StatusCodes.BAD_REQUEST
-            );
-        }
+        return await Service.readFile({
+          id: id,
+          storageMedium: storageMedium,
+          res: res,
+          eventHandler: Service[readFileMap[storageMedium]],
+        });
       },
       { instance: fileDebug, msg: `${readFile.name} service` }
     );
-    // Res is being stream to at service level
+    // Res is being stream to at service level, that's why there's nothing here
   } catch (err) {
     return next(err);
   }
@@ -68,7 +61,7 @@ export async function uploadFile(
   next: NextFunction
 ) {
   try {
-    const params = debugWrapper(
+    const { storageMedium, encryption } = debugWrapper(
       () => {
         return Validator.uploadFile(req);
       },
@@ -77,28 +70,12 @@ export async function uploadFile(
 
     const id = await asyncDebugWrapper(
       async () => {
-        const eventHandler =
-          Service[uploadFileMap[params['storageMedium']][params.encryption]];
-
-        switch (params.storageMedium) {
-          case 'disk':
-            return await Service.uploadToDisk({
-              req: req,
-              ctx: res.locals.ctx,
-              eventHandler: eventHandler,
-            });
-          case 's3':
-            return await Service.uploadToS3({
-              req: req,
-              ctx: res.locals.ctx,
-              eventHandler: eventHandler,
-            });
-          default:
-            throw new ILRDStorageError(
-              'Unsupported storage medium',
-              StatusCodes.BAD_REQUEST
-            );
-        }
+        return await Service.uploadFile({
+          req: req,
+          ctx: res.locals.ctx,
+          encrypt: encryption,
+          eventHandler: Service[uploadFileMap[storageMedium]],
+        });
       },
       { instance: fileDebug, msg: `${uploadFile.name} service` }
     );

@@ -1,23 +1,22 @@
 import {
-  uploadFileToDiskEventHandler,
+  uploadFile,
+  uploadFileToDiskHandler,
   uploadFileToS3EventHandler,
-  uploadSecureFileToDiskEventHandler,
-  uploadSecureFileToS3EventHandler,
-  uploadToDisk,
-  uploadToS3,
 } from './upload.js';
 
-import { readFileFromDisk, readFileFromS3 } from './download.js';
+import {
+  readFile,
+  readFileFromDiskHandler,
+  readFileFromS3Handler,
+} from './download.js';
 
 /**********************************************************************************/
 
 export {
-  readFileFromDisk,
-  readFileFromS3,
-  uploadFileToDiskEventHandler,
+  readFile,
+  readFileFromDiskHandler,
+  readFileFromS3Handler,
+  uploadFile,
+  uploadFileToDiskHandler,
   uploadFileToS3EventHandler,
-  uploadSecureFileToDiskEventHandler,
-  uploadSecureFileToS3EventHandler,
-  uploadToDisk,
-  uploadToS3,
 };

@@ -13,8 +13,11 @@ export const VALIDATION = {
   MAX_FILE_SIZE: 1_024 * 1_024 * 2_000,
   ALLOWED_STORAGE_MEDIUMS: ['disk', 's3'],
   ENCRYPTION_OPTIONS: ['encrypt', 'plain'],
-  LARGE_FILE_THRESHOLD: 1_024 * 1_024 * 100,
+  DELETE_FILE_DELAY: 4_000,
 } as const;
+
+export type AllowedStorageMediums =
+  (typeof VALIDATION.ALLOWED_STORAGE_MEDIUMS)[number];
 
 /**********************************************************************************/
 

@@ -1,47 +1,63 @@
-import type { readFile } from '../validator.js';
+import type { readFile as readFileValidator } from '../validator.js';
 
 import {
-  decryptStream,
   entityNotFoundError,
   storageMediumMismatchError,
   streamFileError,
 } from '../../utils.js';
 
-import { createReadStream } from 'fs';
 import {
+  createReadStream,
   eq,
+  GetObjectCommand,
   pipeline,
+  type AllowedStorageMediums,
+  type Decipher,
+  type Readable,
   type RequestContext,
   type ResponseWithCtx,
 } from '../../../utils/index.js';
 
 /**********************************************************************************/
 
-type ReadFileValidationData = ReturnType<typeof readFile>['id'];
+type ReadFileValidationData = ReturnType<typeof readFileValidator>['id'];
 
 /**********************************************************************************/
 
-export async function readFileFromDisk(
-  id: ReadFileValidationData,
-  res: ResponseWithCtx
-) {
-  const fileData = await readFileDatabaseEntry(id, res.locals.ctx.db);
+export async function readFile(params: {
+  id: ReadFileValidationData;
+  storageMedium: AllowedStorageMediums;
+  res: ResponseWithCtx;
+  eventHandler: (params: {
+    fileData: Awaited<ReturnType<typeof readFileDatabaseEntry>>;
+    res: ResponseWithCtx;
+    secured: boolean;
+  }) => Promise<void>;
+}) {
+  const { id, storageMedium, res, eventHandler } = params;
 
-  if (fileData.secured) {
-    return await readSecuredFileFromDiskHandler(fileData, res);
-  }
+  const fileData = await readFileDatabaseEntry({
+    id: id,
+    db: res.locals.ctx.db,
+    expectedStorageMedium: storageMedium,
+  });
 
-  return await readFileFromDiskHandler(fileData, res);
+  return await eventHandler({
+    fileData: fileData,
+    res: res,
+    secured: fileData.secured,
+  });
 }
 
-export async function readFileFromS3(
-  id: ReadFileValidationData,
-  res: ResponseWithCtx
-) {}
-
 /**********************************************************************************/
 
-async function readFileDatabaseEntry(id: string, db: RequestContext['db']) {
+async function readFileDatabaseEntry(params: {
+  id: string;
+  db: RequestContext['db'];
+  expectedStorageMedium: AllowedStorageMediums;
+}) {
+  const { id, db, expectedStorageMedium } = params;
+
   const handler = db.getHandler();
   const {
     file: { model: fileModel },
@@ -63,7 +79,7 @@ async function readFileDatabaseEntry(id: string, db: RequestContext['db']) {
     throw entityNotFoundError('file', id);
   }
   const fileData = filesData[0];
-  if (fileData.storageMedium !== 'disk') {
+  if (fileData.storageMedium !== expectedStorageMedium) {
     throw storageMediumMismatchError();
   }
 
@@ -75,54 +91,107 @@ async function readFileDatabaseEntry(id: string, db: RequestContext['db']) {
   };
 }
 
+export async function readFileFromDiskHandler(params: {
+  fileData: Awaited<ReturnType<typeof readFileDatabaseEntry>>;
+  res: ResponseWithCtx;
+  secured: boolean;
+}) {
+  try {
+    const { fileData, res } = params;
+
+    getResponseHeaders(fileData).forEach(([key, value]) => {
+      res.setHeader(key, value);
+    });
+
+    return await initDiskPipeline(params);
+  } catch (err) {
+    throw streamFileError(err);
+  }
+}
+
+export async function readFileFromS3Handler(params: {
+  fileData: Awaited<ReturnType<typeof readFileDatabaseEntry>>;
+  res: ResponseWithCtx;
+  secured: boolean;
+}) {
+  try {
+    const { fileData, res } = params;
+
+    getResponseHeaders(fileData).forEach(([key, value]) => {
+      res.setHeader(key, value);
+    });
+
+    return await initS3Pipeline(params);
+  } catch (err) {
+    throw streamFileError(err);
+  }
+}
+
 /**********************************************************************************/
 
-async function readFileFromDiskHandler(
-  fileData: Awaited<ReturnType<typeof readFileDatabaseEntry>>,
-  res: ResponseWithCtx
+function getResponseHeaders(
+  fileData: Awaited<ReturnType<typeof readFileDatabaseEntry>>
 ) {
-  try {
-    res
-      .setHeader('Content-Type', fileData.mimeType)
-      .setHeader(
-        'Content-Disposition',
-        `attachment; filename="${fileData.name}"`
-      );
-
-    // eslint-disable-next-line @security/detect-non-literal-fs-filename
-    await pipeline(createReadStream(fileData.path), res);
-  } catch (err) {
-    console.error('Error streaming file:\n', err);
-    throw streamFileError();
-  }
+  return [
+    ['Content-Type', fileData.mimeType],
+    ['Content-Disposition', `attachment; filename="${fileData.name}"`],
+  ] as const;
 }
 
-async function readSecuredFileFromDiskHandler(
-  fileData: Awaited<ReturnType<typeof readFileDatabaseEntry>>,
-  res: ResponseWithCtx
-) {
-  try {
-    const decipher = res.locals.ctx.encryption.createDecryptionCipher();
+async function initDiskPipeline(params: {
+  fileData: Awaited<ReturnType<typeof readFileDatabaseEntry>>;
+  res: ResponseWithCtx;
+  secured: boolean;
+}) {
+  const { fileData, res, secured } = params;
+  const { encryption } = res.locals.ctx;
 
-    res
-      .setHeader('Content-Type', fileData.mimeType)
-      .setHeader(
-        'Content-Disposition',
-        `attachment; filename="${fileData.name}"`
-      );
-
-    // eslint-disable-next-line @security/detect-non-literal-fs-filename
-    await pipeline(
-      createReadStream(fileData.path),
-      decryptStream(decipher),
-      res
+  const srcStream = createReadStream(fileData.path);
+  const destStream = res;
+  if (secured) {
+    return await pipeline(
+      srcStream,
+      decryptStream(encryption.createDecryptionCipher()),
+      destStream
     );
-  } catch (err) {
-    console.error('Error streaming file:\n', err);
-    throw streamFileError();
   }
+
+  return await pipeline(srcStream, destStream);
 }
 
-async function readFileFromS3Handler() {}
+async function initS3Pipeline(params: {
+  fileData: Awaited<ReturnType<typeof readFileDatabaseEntry>>;
+  res: ResponseWithCtx;
+  secured: boolean;
+}) {
+  const { fileData, res, secured } = params;
+  const { aws, encryption } = res.locals.ctx;
+  const s3Client = aws.getClient();
 
-async function readSecuredFileFromS3Handler() {}
+  const srcStream = s3Client.send(
+    new GetObjectCommand({
+      Bucket: aws.getBucketName(),
+      Key: fileData.path,
+    })
+  );
+  const destStream = res;
+  if (secured) {
+    return await pipeline(
+      (await srcStream).Body!,
+      decryptStream(encryption.createDecryptionCipher()),
+      destStream
+    );
+  }
+
+  return await pipeline((await srcStream).Body!, destStream);
+}
+
+function decryptStream(decipher: Decipher) {
+  return async function* (stream: Readable) {
+    for await (const chunk of stream) {
+      yield decipher.update(chunk);
+    }
+
+    yield decipher.final();
+  };
+}

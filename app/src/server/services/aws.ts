@@ -1,4 +1,4 @@
-import { S3Client } from '../../utils/index.js';
+import { S3Client, type NodeJsClient } from '../../utils/index.js';
 
 /**********************************************************************************/
 
@@ -20,7 +20,8 @@ export default class AWS {
         accessKeyId: accessKeyId,
         secretAccessKey: secretAccessKey,
       },
-    });
+      // See: https://stackoverflow.com/a/76946804
+    }) as NodeJsClient<S3Client>;
     this.#bucketName = bucketName;
   }
 

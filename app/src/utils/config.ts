@@ -1,3 +1,6 @@
+import { globalAgent } from 'node:http';
+import { Stream } from 'node:stream';
+
 import { ERR_CODES } from './constants.js';
 import {
   isDevelopmentMode,
@@ -17,6 +20,8 @@ type EnvironmentVariables = {
     healthCheck: { route: string; allowedHosts: Set<string> };
   };
   diskFilesPath: string;
+  maxFileSize: number;
+  bufferSize: number;
   db: string;
   encryption: {
     key: string;
@@ -56,6 +61,8 @@ export default class EnvironmentManager {
         key: process.env.ENCRYPTION_KEY_SEED!,
         iv: process.env.ENCRYPTION_IV_SEED!,
       },
+      maxFileSize: Number(process.env.MAX_FILE_SIZE!),
+      bufferSize: Number(process.env.BUFFER_SIZE!),
       aws: {
         region: process.env.AWS_REGION!,
         accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
@@ -63,6 +70,19 @@ export default class EnvironmentManager {
         bucketName: process.env.AWS_BUCKET_NAME!,
       },
     } as const satisfies EnvironmentVariables;
+
+    Stream.setDefaultHighWaterMark(
+      false,
+      this.#environmentVariables.bufferSize
+    );
+
+    // The default stack trace limit is 10 calls. Increasing it to a number which
+    // we'll never have to think about it again
+    Error.stackTraceLimit = 256;
+
+    // To prevent DOS attacks, See: https://nodejs.org/en/learn/getting-started/security-best-practices#denial-of-service-of-http-server-cwe-400
+    globalAgent.maxSockets = 32;
+    globalAgent.maxTotalSockets = 1024;
   }
 
   public getEnvVariables() {
@@ -109,6 +129,8 @@ export default class EnvironmentManager {
       'DISK_FILES_PATH',
       'ENCRYPTION_KEY_SEED',
       'ENCRYPTION_IV_SEED',
+      'MAX_FILE_SIZE',
+      'BUFFER_SIZE',
       'AWS_REGION',
       'AWS_ACCESS_KEY_ID',
       'AWS_SECRET_ACCESS_KEY',

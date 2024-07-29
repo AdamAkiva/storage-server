@@ -9,18 +9,20 @@ import {
   createHash,
   randomUUID,
 } from 'node:crypto';
-import { createWriteStream } from 'node:fs';
+import { createReadStream, createWriteStream } from 'node:fs';
+import { unlink } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { resolve } from 'node:path';
 import { Readable, Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
+import { setTimeout } from 'node:timers/promises';
 
 import BusBoy from 'busboy';
 import {
-  type Logger as DrizzleLogger,
   eq,
   getTableColumns,
   sql,
+  type Logger as DrizzleLogger,
 } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import express, { Router, json } from 'express';
@@ -37,6 +39,7 @@ import {
   databaseDebug,
   fileDebug,
   generalDebug,
+  type AllowedStorageMediums,
 } from './constants.js';
 import ILRDStorageError from './error.js';
 import {
@@ -59,11 +62,11 @@ import type {
   Cipher,
   DebugInstance,
   Decipher,
-  EventHandler,
   Express,
   MaybeArray,
   Mode,
   NextFunction,
+  NodeJsClient,
   Reject,
   Request,
   RequestContext,
@@ -74,6 +77,7 @@ import type {
   Server,
   TransformCallback,
   UnknownObject,
+  WriteStream,
 } from './types/index.js';
 
 /**********************************************************************************/
@@ -97,6 +101,7 @@ export {
   createCipheriv,
   createDecipheriv,
   createHash,
+  createReadStream,
   createServer,
   createWriteStream,
   databaseDebug,
@@ -119,22 +124,25 @@ export {
   pipeline,
   randomUUID,
   resolve,
+  setTimeout,
   sql,
   strcasecmp,
+  unlink,
   type AddOptional,
   type AddRequired,
   type AddressInfo,
+  type AllowedStorageMediums,
   type ArrayWithAtLeastOneValue,
   type BusboyEvents,
   type Cipher,
   type DebugInstance,
   type Decipher,
   type DrizzleLogger,
-  type EventHandler,
   type Express,
   type MaybeArray,
   type Mode,
   type NextFunction,
+  type NodeJsClient,
   type Reject,
   type Request,
   type RequestContext,
@@ -145,4 +153,5 @@ export {
   type Server,
   type TransformCallback,
   type UnknownObject,
+  type WriteStream,
 };
