@@ -6,4 +6,4 @@
 # expected
 
 npm install && DB_URL=$DB_URL npm run commit-migrations && DB_URL=$DB_TEST_URL npm run commit-migrations && npm run generate-openapi;
-exec env DEBUG=storage-server:* node --watch --nolazy --enable-source-maps --trace-uncaught --trace-warnings --inspect=0.0.0.0:$SERVER_DEBUG_PORT --import @swc-node/register/esm-register ./src/main.ts;
+exec env DEBUG=storage-server:* node --watch --nolazy --enable-source-maps --trace-uncaught --trace-warnings --inspect=0.0.0.0:"$SERVER_DEBUG_PORT" --import @swc-node/register/esm-register ./src/main.ts;
